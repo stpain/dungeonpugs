@@ -1,8 +1,8 @@
-## Interface: 20504
+## Interface: 30400
 ## Author: theboringdad
 ## Version: 0.1
 ## Title: Dungeon Pugs
-## Notes: Dungeon stuff
+## Notes: Dungeons? Nah it does raids, pvp, questing and even custom stuff!
 ## SavedVariables: DungeonPugsAccount
 ## SavedVariablesPerCharacter: DungeonPugsCharacter
 ## Dependencies: Blizzard_LookingForGroupUI
