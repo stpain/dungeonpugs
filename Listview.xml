@@ -1,0 +1,152 @@
+<UI>
+    <Frame name="DungeonPugsListviewTemplate" mixin="DungeonPugsListviewMixin" virtual="true">
+        <Frames>
+            <Frame parentKey="scrollBox" inherits="WowScrollBoxList"/>
+            <EventFrame parentKey="scrollBar" inherits="WowTrimScrollBar">
+                <Anchors>
+                    <Anchor point="TOPRIGHT"/>
+                    <Anchor point="BOTTOMRIGHT"/>
+                </Anchors>
+            </EventFrame>
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+
+
+
+    <!-- below are the listview item templates -->
+    
+    <!-- expansion select -->
+    <Button name="DungeonPugsExpansionSelectListviewButton" mixin="DungeonPugsExpansionSelectListviewButtonMixin" virtual="true">
+        <HighlightTexture atlas="ShipMission_FollowerListButton-Highlight"/>
+    </Button>
+
+
+
+    <Frame name="DungeonPugsDungeonListviewItemTemplate" mixin="DungeonPugsDungeonListviewItemTemplateMixin" virtual="true" enableMouse="true">
+        <Layers>
+            <Layer level="HIGHLIGHT">
+                <Texture parentKey="background" setAllPoints="true" atlas="search-highlight"/>
+            </Layer>
+            <layer level="OVERLAY">
+                <FontString parentKey="name" inherits="GameFontNormal">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="5" y="0"/>
+                    </Anchors>
+                </FontString>
+            </layer>
+        </Layers>
+    </Frame>
+
+
+
+    <Frame name="DungeonPugsPlayerListviewItemTemplate" mixin="DungeonPugsPlayerListviewItemTemplateMixin" virtual="true">
+        <Layers>
+            <Layer level="ARTWORK">
+                <Texture parentKey="class">
+                    <Anchors>
+                        <Anchor point="LEFT" x="0" y="0"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="level" inherits="GameFontNormal">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.class" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="name" inherits="GameFontNormal">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.level" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="roles" inherits="GameFontNormal" justifyH="RIGHT">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-5" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="background" setAllPoints="true"/>
+            </Layer>
+        </Layers>
+    </Frame>
+
+
+    <Frame name="DungeonPugsHelpTipTemplate_BottomArrow" inherits="GlowBoxTemplate" mixin="DungeonPugsHelpTipMixin" virtual="true" enableMouse="true" frameStrata="TOOLTIP">
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString parentKey="text" inherits="GameFontHighlightLeft" justifyH="LEFT" justifyV="TOP">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="5" y="-5"/>
+                        <Anchor point="BOTTOMRIGHT" x="-5" y="5"/>
+                    </Anchors>
+                </FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="Arrow" inherits="GlowBoxArrowTemplate">
+				<Size x="61" y="61"/>
+				<Anchors>
+					<Anchor point="BOTTOM" x="0" y="-60"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnShow method="OnShow"/>
+		</Scripts>
+	</Frame>
+
+	<Frame name="DungeonPugsHelpTipTemplate_TopArrow" inherits="GlowBoxTemplate" mixin="DungeonPugsHelpTipMixin" virtual="true" enableMouse="true" frameStrata="TOOLTIP">
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString parentKey="text" inherits="GameFontHighlightLeft" justifyH="LEFT" justifyV="TOP">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="5" y="-5"/>
+                        <Anchor point="BOTTOMRIGHT" x="-5" y="5"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="background">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="1" y="-1"/>
+						<Anchor point="BOTTOMRIGHT" x="-1" y="1"/>
+					</Anchors>
+					<Color r="1" g="1" b="1"/>
+					<Gradient orientation="VERTICAL">
+						<MaxColor r="0.23" g="0.19" b="0"/>
+						<MinColor r="0" g="0" b="0"/>
+					</Gradient>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="Arrow" inherits="GlowBoxArrowTemplate">
+				<Size x="61" y="61"/>
+				<Anchors>
+					<Anchor point="BOTTOM" relativePoint="TOP" x="0" y="-30"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnShow method="OnShow"/>
+            <OnLoad>
+                self.BG:Hide()
+                self.Arrow.Arrow:ClearAllPoints()
+                self.Arrow.Arrow:SetPoint("TOP", 0, -11)
+                self.Arrow.Arrow:SetRotation(3.14)
+                self.Arrow.Glow:ClearAllPoints()
+                self.Arrow.Glow:SetPoint("TOP", -4, -3)
+                self.Arrow.Glow:SetRotation(3.14)
+            </OnLoad>
+		</Scripts>
+	</Frame>
+
+</UI>

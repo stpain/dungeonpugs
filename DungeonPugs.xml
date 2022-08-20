@@ -1,0 +1,262 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
+
+    <Frame name="DungeonPugsUI" mixin="DungeonPugsMixin" parent="UIParent" hyperlinksEnabled="true" inherits="BasicFrameTemplate" frameStrata="HIGH" enableMouse="true" movable="true">
+        <Size x="800" y="423"/>
+        <Anchors>
+            <Anchor point="CENTER" x="0" y="0"/>
+        </Anchors>
+
+        <Layers>
+            <Layer level="OVERLAY">
+
+                <FontString parentKey="statusText" inherits="GameFontNormalSmall" justifyH="RIGHT">
+                    <Color r="1" g="1" b="1"/>
+                    <Size x="300" y="10"/>
+                    <Anchors>
+                        <Anchor point="TOPRIGHT" x="-48" y="-6"/>
+                    </Anchors>
+                </FontString>
+
+                <FontString parentKey="selectedDungeonLabel" inherits="GameFontNormal">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="TOP" x="0" y="-6"/>
+                    </Anchors>
+                </FontString>
+
+                <FontString parentKey="lastUpdatedInfo" inherits="GameFontNormal">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="12" y="-6"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+
+        <Frames>
+
+            <Button parentKey="helpIcon">
+                <Size x="18" y="18"/>
+                <Anchors>
+                    <Anchor point="TOPRIGHT" x="-26" y="-2"/>
+                </Anchors>
+                <NormalTexture atlas="glueannouncementpopup-icon-info"/>
+            </Button>
+
+            <Frame parentKey="dungeonsListview" inherits="InsetFrameTemplate3,DungeonPugsListviewTemplate">
+                <Size x="300"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="2" y="-60"/>
+                    <Anchor point="BOTTOMLEFT" x="2" y="2"/>
+                </Anchors>
+                <KeyValues>
+                    <KeyValue key="frameType" value="FRAME" type="string"/>
+                    <KeyValue key="itemTemplate" value="DungeonPugsDungeonListviewItemTemplate" type="string"/>
+                    <KeyValue key="elementHeight" value="24" type="number"/>
+                </KeyValues>
+
+                <Layers>
+                    <Layer level="OVERLAY">                        
+                        <FontString parentKey="header" inherits="GameFontNormal">
+                            <Color r="1" g="1" b="1"/>
+                            <Anchors>
+                                <Anchor point="TOP" x="0" y="20"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+            </Frame>
+            
+            <Frame parentKey="dungeonsListviewHelp" parentArray="helptips" hidden="true" inherits="DungeonPugsHelpTipTemplate_TopArrow">
+                <Size x="220" y="80"/>
+                <Anchors>
+                    <Anchor point="BOTTOM" relativeKey="$parent.dungeonsListview" relativePoint="BOTTOM" x="-30" y="100"/>
+                </Anchors>
+            </Frame>
+
+            <Frame parentKey="dungeonPlayersListview" inherits="InsetFrameTemplate3,DungeonPugsListviewTemplate">
+                <Size x="280"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.dungeonsListview" relativePoint="TOPRIGHT" x="5" y="0"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.dungeonsListview" relativePoint="BOTTOMRIGHT" x="5" y="0"/>
+                </Anchors>
+                <KeyValues>
+                    <KeyValue key="frameType" value="FRAME" type="string"/>
+                    <KeyValue key="itemTemplate" value="DungeonPugsPlayerListviewItemTemplate" type="string"/>
+                    <KeyValue key="elementHeight" value="24" type="number"/>
+                </KeyValues>
+                
+                <Layers>
+                    <Layer level="OVERLAY">                        
+                        <FontString parentKey="header" inherits="GameFontNormal">
+                            <Color r="1" g="1" b="1"/>
+                            <Anchors>
+                                <Anchor point="TOP" x="0" y="20"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+            </Frame>
+
+            <Frame parentKey="dungeonPlayersListviewHelp" parentArray="helptips" hidden="true" inherits="DungeonPugsHelpTipTemplate_BottomArrow">
+                <Size x="320" y="180"/>
+                <Anchors>
+                    <Anchor point="BOTTOM" relativeKey="$parent.dungeonPlayersListview" relativePoint="TOP" x="-30" y="10"/>
+                </Anchors>
+            </Frame>
+
+            <Button parentKey="clearDungeonPlayers" inherits="UIPanelButtonTemplate" text="Clear">
+                <Size x="50" y="22"/>
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" relativeKey="$parent.dungeonsListview" relativePoint="TOPRIGHT" x="-2" y="2"/>
+                </Anchors>
+            </Button>
+
+            <Button parentKey="blizzDontBreakThis" inherits="UIPanelButtonTemplate, InsecureActionButtonTemplate" text="Refresh" registerForClicks="LeftButtonUp,RightButtonUp">
+                <Size x="180" y="24"/>
+                <Anchors>
+                    <Anchor point="TOPRIGHT" x="-16" y="-60"/>
+                </Anchors>
+                <Attributes>
+                    <Attribute name="type1" value="macro"/>
+                    <Attribute name="type2" value="macro"/>
+                </Attributes>
+            </Button>
+
+            <!-- i had to remove this as blizzard fixed/broke the ability to auto refresh the lfg list -->
+            <!-- <Slider name="DungeonPugsRefreshTimeSlider" parentKey="refreshTimer" inherits="OptionsSliderTemplate" stepValue="1" minValue="5" maxValue="300" defaultValue="30">
+                <Size x="180" y="16"/>
+                <Anchors>
+                    <Anchor point="TOPRIGHT" x="-16" y="-140"/>
+                </Anchors>
+
+                <Layers>
+                    <Layer level="OVERLAY">                        
+                        <FontString parentKey="header" inherits="GameFontNormal" text="Refresh timer (seconds)">
+                            <Color r="1" g="1" b="1"/>
+                            <Anchors>
+                                <Anchor point="TOP" x="0" y="28"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+            </Slider> -->
+
+            <EditBox parentKey="whisperMessageInput" inherits="InputBoxTemplate" autoFocus="false">
+                <Size x="180" y="16"/>
+                <Anchors>
+                    <Anchor point="TOPRIGHT" x="-16" y="-150"/>
+                </Anchors>
+
+                <Layers>
+                    <Layer level="OVERLAY">                        
+                        <FontString parentKey="header" inherits="GameFontNormal" text="Whisper message">
+                            <Color r="1" g="1" b="1"/>
+                            <Anchors>
+                                <Anchor point="TOP" x="0" y="20"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+            </EditBox>
+
+            <CheckButton parentKey="roleHealer" inherits="ChatConfigCheckButtonTemplate" >
+                <Size x="24" y="24"/>
+                <HitRectInsets left="0" right="-10"/>
+                <CheckedTexture atlas="orderhalltalents-done-checkmark"/>
+                <DisabledCheckedTexture />
+                <Layers>
+                    <Layer>
+                        <FontString parentKey="label" inherits="GameFontNormal" text="PvP">
+                            <Color r="1" g="1" b="1" a="1"/>
+                            <FontHeight val="12"/>
+                            <Anchors>
+                                <Anchor point="LEFT" x="24" y="0"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>                
+                <Anchors>
+                    <Anchor point="BOTTOM" relativeKey="$parent.whisperMessageInput" relativePoint="TOP" x="-15" y="25"/>
+                </Anchors>
+            </CheckButton>
+
+            <Frame parentKey="configHelp" parentArray="helptips" hidden="true" inherits="DungeonPugsHelpTipTemplate_TopArrow">
+                <Size x="300" y="140"/>
+                <Anchors>
+                    <Anchor point="TOP" relativeKey="$parent.whisperMessageInput" relativePoint="BOTTOM" x="20" y="-10"/>
+                </Anchors>
+            </Frame>
+
+            <CheckButton parentKey="roleTank" inherits="ChatConfigCheckButtonTemplate" >
+                <Size x="24" y="24"/>
+                <HitRectInsets left="0" right="-10"/>
+                <CheckedTexture atlas="orderhalltalents-done-checkmark"/>
+                <DisabledCheckedTexture />
+                <Layers>
+                    <Layer>
+                        <FontString parentKey="label" inherits="GameFontNormal">
+                            <Color r="1" g="1" b="1" a="1"/>
+                            <FontHeight val="12"/>
+                            <Anchors>
+                                <Anchor point="LEFT" x="24" y="0"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>                
+                <Anchors>
+                    <Anchor point="RIGHT" relativeKey="$parent.roleHealer" relativePoint="LEFT" x="-40" y="0"/>
+                </Anchors>
+            </CheckButton>
+
+            <CheckButton parentKey="roleDps" inherits="ChatConfigCheckButtonTemplate" >
+                <Size x="24" y="24"/>
+                <HitRectInsets left="0" right="-10"/>
+                <CheckedTexture atlas="orderhalltalents-done-checkmark"/>
+                <DisabledCheckedTexture />
+                <Layers>
+                    <Layer>
+                        <FontString parentKey="label" inherits="GameFontNormal">
+                            <Color r="1" g="1" b="1" a="1"/>
+                            <FontHeight val="12"/>
+                            <Anchors>
+                                <Anchor point="LEFT" x="24" y="0"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>                
+                <Anchors>
+                    <Anchor point="LEFT" relativeKey="$parent.roleHealer" relativePoint="RIGHT" x="40" y="0"/>
+                </Anchors>
+            </CheckButton>
+
+        </Frames>
+
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="help" inherits="GameFontNormal">
+                    <Size y="100"/>
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="BOTTOMRIGHT" x="-6" y="6"/>
+                        <Anchor point="BOTTOMLEFT" relativeKey="$parent.dungeonPlayersListview" relativePoint="BOTTOMRIGHT" x="5" y="6"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnEvent method="OnEvent"/>
+            <OnUpdate method="OnUpdate"/>
+            <OnDragStart>
+                self:StartMoving()
+            </OnDragStart>
+            <OnDragStop>
+                self:StopMovingOrSizing()
+            </OnDragStop>
+        </Scripts>
+
+    </Frame>
+</Ui>
