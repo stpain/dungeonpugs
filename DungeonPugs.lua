@@ -21,7 +21,7 @@ function DungeonPugsMixin:OnLoad()
         end
     end)
 
-    self.clearDungeonPlayers:SetScript("OnClick", function()
+    self.clearInstanceFilters:SetScript("OnClick", function()
         self.dungeonPlayersListview.DataProvider:Flush()
         self.dungeonPlayersListview.DataProvider:InsertTable(self.allPlayers or {})
         self.selectedDungeon = nil;
@@ -45,8 +45,20 @@ function DungeonPugsMixin:OnLoad()
     self.roleDps:SetScript("OnClick", function()
         self:UpdateWhisperMessage()
     end)
+    self.includeInstanceName:SetScript("OnClick", function()
+        self:UpdateWhisperMessage()
+    end)
+    self.includeClass:SetScript("OnClick", function()
+        self:UpdateWhisperMessage()
+    end)
 
-    self.dungeonsListview.header:SetText(L.DUNGEON_HEADER)
+    self.blizzDontBreakThis:SetText(L.REFRESH_SEARCH)
+    self.clearInstanceFilters:SetText(L.CLEAR_INSTANCE_FILTER)
+
+    self.whisperMessageInput.label:SetText(L.WHISPER_MESSAGE)
+    self.includeClass.label:SetText(L.INCLUDE_CLASS)
+    self.includeInstanceName.label:SetText(L.INCLUDE_INSTANCE_NAME)
+
     self.dungeonPlayersListview.header:SetText(L.DUNGEON_PLAYERS_HEADER)
 
     self.help:SetText(L.HELP)
@@ -54,6 +66,26 @@ function DungeonPugsMixin:OnLoad()
     self.dungeonsListviewHelp:SetText(L.HELPTIP_DUNGEON_LISTVIEW)
     self.dungeonPlayersListviewHelp:SetText(L.HELPTIP_DUNGEON_PLAYERS_LISTVIEW)
     self.configHelp:SetText(L.HELTIP_CONFIG)
+
+
+    local categories = C_LFGList.GetAvailableCategories()
+    local menu = {}
+    for k, categoryID in ipairs(categories) do
+        local category = C_LFGList.GetCategoryInfo(categoryID)
+        table.insert(menu, {
+            text = category,
+            isTitle = false,
+            notCheckable = true,
+            func = function()
+                UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, category)
+                UIDropDownMenu_SetSelectedValue(LFGBrowseFrame.CategoryDropDown, categoryID);
+                LFGBrowseFrameRefreshButton:Click()
+            end
+        })
+    end
+    DungeonPugsInstanceDropdownButton:SetScript("OnClick", function()
+        EasyMenu(menu, DungeonPugsInstanceDropdown, DungeonPugsInstanceDropdown, 10, 10, nil, 5.0)
+    end)
 
 --ldfgbrowseframesearchungspinner
 
@@ -91,6 +123,10 @@ function DungeonPugsMixin:UpdateWhisperMessage()
 
     local msg = L.HELLO
 
+    if self.includeClass:GetChecked() == true then
+        msg = string.format("%s %s", msg, UnitClass("player"))
+    end
+
     if isTank then
         msg = string.format("%s %s", msg, L.TANK)
     end
@@ -101,7 +137,12 @@ function DungeonPugsMixin:UpdateWhisperMessage()
         msg = string.format("%s %s", msg, L.DPS)
     end
 
-    self.whisperMessageInput:SetText(string.format("%s %s %s", msg, L.LFG, dunegon))
+    if self.includeInstanceName:GetChecked() == true then
+        self.whisperMessageInput:SetText(string.format("%s %s %s", msg, L.LFG, dunegon))
+    else
+        self.whisperMessageInput:SetText(string.format("%s %s", msg, L.LFG))
+    end
+
     self.whisperMessageInput:SetCursorPosition(1)
 end
 
@@ -226,6 +267,8 @@ function DungeonPugsMixin:LFG_OnListChanged()
         --loop each item in the filtered results
         for k, v in ipairs(filteredResults) do
             local searchResultData = C_LFGList.GetSearchResultInfo(v)
+
+            local isNewbieFriendly = searchResultData.newPlayerFriendly;
     
             --ignore the listing if it was delisted, nobody wants those
             if not searchResultData.isDelisted then
@@ -295,6 +338,7 @@ function DungeonPugsMixin:LFG_OnListChanged()
                                             },
                                             zone = zone,
                                             isLeader = true,
+                                            isNewbieFriendly = isNewbieFriendly,
                                             inGroup = isGroup,
                                         })
                                     end
@@ -361,6 +405,7 @@ function DungeonPugsMixin:LFG_OnListChanged()
                                         },
                                         zone = zone,
                                         isLeader = true,
+                                        isNewbieFriendly = isNewbieFriendly,
                                         inGroup = isGroup,
                                     })
                                 end
@@ -513,6 +558,7 @@ function DungeonPugsMixin:Playerslist_OnMouseDown(button, player)
         
         if IsAltKeyDown() then
 
+            InviteToGroup()
         else
             local msg = self.whisperMessageInput:GetText();
             if msg ~= "" then

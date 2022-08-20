@@ -169,13 +169,17 @@ function DungeonPugsPlayerListviewItemTemplateMixin:SetDataBinding(binding, heig
         self.level:SetText(binding.level)
     end
 
+    local name = binding.name;
     if binding.name then
-        if binding.isLeader and binding.inGroup then
-            self.name:SetText(string.format("%s %s", binding.name, CreateAtlasMarkup("groupfinder-icon-leader", 20, 10)))
-        else
-            self.name:SetText(binding.name)
+
+        if binding.isLeader then
+            name = string.format("%s %s", name, CreateAtlasMarkup("groupfinder-icon-leader", 20, 10))
+        end
+        if binding.isNewbieFriendly then
+            name = string.format("%s %s", name, CreateAtlasMarkup("newplayerchat-chaticon-newcomer", 20, 20))
         end
     end
+    self.name:SetText(name)
     
     if binding.role == "TANK" then
         self.background:SetColorTexture(0,0,1,0.1)

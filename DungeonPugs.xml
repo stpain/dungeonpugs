@@ -67,6 +67,20 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                     </Layer>
                 </Layers>
             </Frame>
+
+            <Frame name="DungeonPugsInstanceDropdown" parentKey="instanceDropdown" inherits="UIDropDownMenuTemplate">
+                <Size x="100" y="22"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.dungeonsListview" relativePoint="TOPLEFT" x="-10" y="32"/>
+                </Anchors>
+            </Frame>
+
+            <Button parentKey="clearInstanceFilters" inherits="UIPanelButtonTemplate" text="Clear">
+                <Size x="130" y="24"/>
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" relativeKey="$parent.dungeonsListview" relativePoint="TOPRIGHT" x="-2" y="6"/>
+                </Anchors>
+            </Button>
             
             <Frame parentKey="dungeonsListviewHelp" parentArray="helptips" hidden="true" inherits="DungeonPugsHelpTipTemplate_TopArrow">
                 <Size x="220" y="80"/>
@@ -106,13 +120,6 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 </Anchors>
             </Frame>
 
-            <Button parentKey="clearDungeonPlayers" inherits="UIPanelButtonTemplate" text="Clear">
-                <Size x="50" y="22"/>
-                <Anchors>
-                    <Anchor point="BOTTOMRIGHT" relativeKey="$parent.dungeonsListview" relativePoint="TOPRIGHT" x="-2" y="2"/>
-                </Anchors>
-            </Button>
-
             <Button parentKey="blizzDontBreakThis" inherits="UIPanelButtonTemplate, InsecureActionButtonTemplate" text="Refresh" registerForClicks="LeftButtonUp,RightButtonUp">
                 <Size x="180" y="24"/>
                 <Anchors>
@@ -146,15 +153,15 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
             <EditBox parentKey="whisperMessageInput" inherits="InputBoxTemplate" autoFocus="false">
                 <Size x="180" y="16"/>
                 <Anchors>
-                    <Anchor point="TOPRIGHT" x="-16" y="-150"/>
+                    <Anchor point="TOPRIGHT" x="-16" y="-210"/>
                 </Anchors>
 
                 <Layers>
                     <Layer level="OVERLAY">                        
-                        <FontString parentKey="header" inherits="GameFontNormal" text="Whisper message">
-                            <Color r="1" g="1" b="1"/>
+                        <FontString parentKey="label" inherits="GameFontNormalLarge" text="Whisper message">
+                            <!-- <Color r="1" g="1" b="1"/> -->
                             <Anchors>
-                                <Anchor point="TOP" x="0" y="20"/>
+                                <Anchor point="TOP" x="0" y="105"/>
                             </Anchors>
                         </FontString>
                     </Layer>
@@ -168,7 +175,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 <DisabledCheckedTexture />
                 <Layers>
                     <Layer>
-                        <FontString parentKey="label" inherits="GameFontNormal" text="PvP">
+                        <FontString parentKey="label" inherits="GameFontNormal">
                             <Color r="1" g="1" b="1" a="1"/>
                             <FontHeight val="12"/>
                             <Anchors>
@@ -178,7 +185,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                     </Layer>
                 </Layers>                
                 <Anchors>
-                    <Anchor point="BOTTOM" relativeKey="$parent.whisperMessageInput" relativePoint="TOP" x="-15" y="25"/>
+                    <Anchor point="BOTTOM" relativeKey="$parent.whisperMessageInput" relativePoint="TOP" x="-15" y="10"/>
                 </Anchors>
             </CheckButton>
 
@@ -207,6 +214,48 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 </Layers>                
                 <Anchors>
                     <Anchor point="RIGHT" relativeKey="$parent.roleHealer" relativePoint="LEFT" x="-40" y="0"/>
+                </Anchors>
+            </CheckButton>
+
+            <CheckButton parentKey="includeClass" inherits="ChatConfigCheckButtonTemplate" >
+                <Size x="24" y="24"/>
+                <HitRectInsets left="0" right="-140"/>
+                <CheckedTexture atlas="orderhalltalents-done-checkmark"/>
+                <DisabledCheckedTexture />
+                <Layers>
+                    <Layer>
+                        <FontString parentKey="label" inherits="GameFontNormal" text="Include class">
+                            <Color r="1" g="1" b="1" a="1"/>
+                            <FontHeight val="12"/>
+                            <Anchors>
+                                <Anchor point="LEFT" x="24" y="0"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>                
+                <Anchors>
+                    <Anchor point="BOTTOM" relativeKey="$parent.roleTank" relativePoint="TOP" x="0" y="0"/>
+                </Anchors>
+            </CheckButton>
+
+            <CheckButton parentKey="includeInstanceName" inherits="ChatConfigCheckButtonTemplate" >
+                <Size x="24" y="24"/>
+                <HitRectInsets left="0" right="-140"/>
+                <CheckedTexture atlas="orderhalltalents-done-checkmark"/>
+                <DisabledCheckedTexture />
+                <Layers>
+                    <Layer>
+                        <FontString parentKey="label" inherits="GameFontNormal" text="Include instance name">
+                            <Color r="1" g="1" b="1" a="1"/>
+                            <FontHeight val="12"/>
+                            <Anchors>
+                                <Anchor point="LEFT" x="24" y="0"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>                
+                <Anchors>
+                    <Anchor point="BOTTOM" relativeKey="$parent.includeClass" relativePoint="TOP" x="0" y="0"/>
                 </Anchors>
             </CheckButton>
 
