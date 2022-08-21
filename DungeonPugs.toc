@@ -1,6 +1,6 @@
 ## Interface: 30400
 ## Author: theboringdad
-## Version: 0.1
+## Version: 0.2
 ## Title: Dungeon Pugs
 ## Notes: Dungeons? Nah it does raids, pvp, questing and even custom stuff!
 ## SavedVariables: DungeonPugsAccount

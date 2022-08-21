@@ -1,6 +1,6 @@
 
 
-local name, addon = ...;
+local addonName, addon = ...;
 
 local L = addon.locales;
 
@@ -14,6 +14,7 @@ function DungeonPugsMixin:OnLoad()
     self:RegisterEvent("PLAYER_ENTERING_WORLD");
     self:RegisterEvent("LFG_LIST_SEARCH_RESULT_UPDATED");
     self:RegisterEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED");
+    self:RegisterEvent("LFG_LIST_AVAILABILITY_UPDATE");
 
     self.helpIcon:SetScript("OnClick", function()
         for k, helptip in ipairs(self.helptips) do
@@ -67,26 +68,6 @@ function DungeonPugsMixin:OnLoad()
     self.dungeonPlayersListviewHelp:SetText(L.HELPTIP_DUNGEON_PLAYERS_LISTVIEW)
     self.configHelp:SetText(L.HELTIP_CONFIG)
 
-
-    local categories = C_LFGList.GetAvailableCategories()
-    local menu = {}
-    for k, categoryID in ipairs(categories) do
-        local category = C_LFGList.GetCategoryInfo(categoryID)
-        table.insert(menu, {
-            text = category,
-            isTitle = false,
-            notCheckable = true,
-            func = function()
-                UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, category)
-                UIDropDownMenu_SetSelectedValue(LFGBrowseFrame.CategoryDropDown, categoryID);
-                LFGBrowseFrameRefreshButton:Click()
-            end
-        })
-    end
-    DungeonPugsInstanceDropdownButton:SetScript("OnClick", function()
-        EasyMenu(menu, DungeonPugsInstanceDropdown, DungeonPugsInstanceDropdown, 10, 10, nil, 5.0)
-    end)
-
 --ldfgbrowseframesearchungspinner
 
 
@@ -111,6 +92,13 @@ function DungeonPugsMixin:UpdateWhisperMessage()
     local isTank = self.roleTank:GetChecked()
     local isDps = self.roleDps:GetChecked()
     local isHealer = self.roleHealer:GetChecked()
+    local includeClass = self.includeClass:GetChecked()
+    local includeInstance = self.includeInstanceName:GetChecked()
+
+    if (isDps == false) and (isTank == false) and (isHealer == false) and (includeClass == false) and (includeInstance == false) then
+        self.whisperMessageInput:SetText("")
+        return;
+    end
 
     local dunegon = "";
     if self.selectedDungeon then
@@ -123,7 +111,7 @@ function DungeonPugsMixin:UpdateWhisperMessage()
 
     local msg = L.HELLO
 
-    if self.includeClass:GetChecked() == true then
+    if includeClass then
         msg = string.format("%s %s", msg, UnitClass("player"))
     end
 
@@ -137,7 +125,7 @@ function DungeonPugsMixin:UpdateWhisperMessage()
         msg = string.format("%s %s", msg, L.DPS)
     end
 
-    if self.includeInstanceName:GetChecked() == true then
+    if includeInstance then
         self.whisperMessageInput:SetText(string.format("%s %s %s", msg, L.LFG, dunegon))
     else
         self.whisperMessageInput:SetText(string.format("%s %s", msg, L.LFG))
@@ -193,6 +181,27 @@ function DungeonPugsMixin:OnEvent(event, ...)
         addon:TriggerEvent("LFG_OnListChanged")
     end
 
+    if event == "LFG_LIST_AVAILABILITY_UPDATE" then
+        local categories = C_LFGList.GetAvailableCategories()
+        local menu = {}
+        for k, categoryID in ipairs(categories) do
+            local category = C_LFGList.GetCategoryInfo(categoryID)
+            table.insert(menu, {
+                text = category,
+                isTitle = false,
+                notCheckable = true,
+                func = function()
+                    UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, category)
+                    UIDropDownMenu_SetSelectedValue(LFGBrowseFrame.CategoryDropDown, categoryID);
+                    LFGBrowseFrameRefreshButton:Click()
+                end
+            })
+        end
+        DungeonPugsInstanceDropdownButton:SetScript("OnClick", function()
+            EasyMenu(menu, DungeonPugsInstanceDropdown, DungeonPugsInstanceDropdown, 10, 10, nil, 5.0)
+        end)
+    end
+
     if event == "PLAYER_ENTERING_WORLD" then
 
         local name, realm = UnitFullName("player");
@@ -212,6 +221,7 @@ function DungeonPugsMixin:OnEvent(event, ...)
             LFGParentFrameTab2:Click()
             UIDropDownMenu_SetSelectedValue(LFGBrowseFrame.CategoryDropDown, 2);
             LFGBrowseFrameRefreshButton:Click()
+
         end)
 
     end
@@ -224,21 +234,52 @@ function DungeonPugsMixin:Database_OnInitialised()
     local ldb = LibStub("LibDataBroker-1.1")
     self.MinimapButton = ldb:NewDataObject('DungeonPugs', {
         type = "launcher",
-        icon = 134068,
+        icon = 134149, --132320 134149   {136293-136316}
         OnClick = function(_, button)
             if button == "LeftButton" then
-                self:Show()
+                self:SetShown(not self:IsVisible())
             end
         end,
         OnTooltipShow = function(tooltip)
             if not tooltip or not tooltip.AddLine then return end
-    
+            tooltip:AddLine(addonName)
         end,
     })
     self.MinimapIcon = LibStub("LibDBIcon-1.0")
     if not DungeonPugsAccount.minimapIcon then DungeonPugsAccount.minimapIcon = {} end
     self.MinimapIcon:Register('DungeonPugs', self.MinimapButton, DungeonPugsAccount.minimapIcon)
-    
+
+    --these dont seem to always be ready on initial login
+    -- local categories = C_LFGList.GetAvailableCategories()
+    -- local getCategoriesTicker;
+    -- if #categories == 0 then
+    --     getCategoriesTicker = C_Timer.NewTicker(1.0, function()
+    --         i = i + 1;
+    --         categories = C_LFGList.GetAvailableCategories()
+    --         if #categories == 5 then
+    --             local menu = {}
+    --             for k, categoryID in ipairs(categories) do
+    --                 local category = C_LFGList.GetCategoryInfo(categoryID)
+    --                 table.insert(menu, {
+    --                     text = category,
+    --                     isTitle = false,
+    --                     notCheckable = true,
+    --                     func = function()
+    --                         UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, category)
+    --                         UIDropDownMenu_SetSelectedValue(LFGBrowseFrame.CategoryDropDown, categoryID);
+    --                         LFGBrowseFrameRefreshButton:Click()
+    --                     end
+    --                 })
+    --             end
+    --             DungeonPugsInstanceDropdownButton:SetScript("OnClick", function()
+    --                 EasyMenu(menu, DungeonPugsInstanceDropdown, DungeonPugsInstanceDropdown, 10, 10, nil, 5.0)
+    --             end)
+    --             getCategoriesTicker:Cancel()
+    --         end
+    --     end)
+    -- end
+
+
 end
 
 
@@ -558,16 +599,15 @@ function DungeonPugsMixin:Playerslist_OnMouseDown(button, player)
         
         if IsAltKeyDown() then
 
-            InviteToGroup()
+            if type(player.name) == "string" then
+                InviteToGroup(player.name)
+            end
+
         else
             local msg = self.whisperMessageInput:GetText();
             if msg ~= "" then
                 SendChatMessage(msg, "WHISPER", nil, player.name)
             end
         end
-
-    elseif button == "RightButton" then
-
-        SendChatMessage("boo", "WHISPER", nil, "Silvessa")
     end
 end
