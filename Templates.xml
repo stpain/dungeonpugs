@@ -79,6 +79,43 @@
     </Frame>
 
 
+
+    <Frame name="DungeonPugsFriendListviewItemTemplate" mixin="DungeonPugsFriendListviewItemTemplateMixin" virtual="true">
+        <Layers>
+            <Layer level="ARTWORK">
+                <Texture parentKey="class">
+                    <Anchors>
+                        <Anchor point="LEFT" x="0" y="0"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="level" inherits="GameFontNormal">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.class" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="name" inherits="GameFontNormal">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.level" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="note" inherits="GameFontNormal" justifyH="RIGHT">
+                    <Color r="1" g="1" b="1"/>
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-5" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="background" setAllPoints="true"/>
+            </Layer>
+        </Layers>
+    </Frame>
+
+
     <Frame name="DungeonPugsHelpTipTemplate_BottomArrow" inherits="GlowBoxTemplate" mixin="DungeonPugsHelpTipMixin" virtual="true" enableMouse="true" frameStrata="TOOLTIP">
 		<Layers>
 			<Layer level="OVERLAY">

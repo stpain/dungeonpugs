@@ -2,6 +2,9 @@
 
 local addonName, addon = ...;
 
+local AceComm = LibStub:GetLibrary("AceComm-3.0")
+
+local Database = addon.database;
 local L = addon.locales;
 
 DungeonPugsMixin = {};
@@ -16,57 +19,130 @@ function DungeonPugsMixin:OnLoad()
     self:RegisterEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED");
     self:RegisterEvent("LFG_LIST_AVAILABILITY_UPDATE");
 
+    hooksecurefunc("UnitPopup_ShowMenu", function()
+
+        if not IsInGroup() then
+            return
+        end
+        if (UIDROPDOWNMENU_MENU_LEVEL > 1) then
+            return;
+        end
+
+        --local dropdownMenu = _G["UIDROPDOWNMENU_INIT_MENU"]
+        local dropdown = UnitPopupSharedUtil.GetCurrentDropdownMenu();
+
+        local playerName = dropdown.name;
+        local playerClass = false;
+
+        if type(dropdown.unit) == "string" then            
+            local _, class = UnitClass(dropdown.unit)
+            if class then
+                playerClass = class;
+            end
+        end
+
+
+        UIDropDownMenu_AddSeparator()
+
+        local title = UIDropDownMenu_CreateInfo();
+        title.isTitle = true;
+        title.text = addonName;
+        title.notCheckable = true;
+        UIDropDownMenu_AddButton(title);
+
+        local addPugFriend = UIDropDownMenu_CreateInfo();
+        addPugFriend.text = L.ADD_PUG_FRIEND;
+        addPugFriend.notCheckable = true;
+        addPugFriend.func = function()
+            self:AddDungeonPugFriend(playerName, playerClass);
+        end
+        UIDropDownMenu_AddButton(addPugFriend);
+
+        local ignorePugPlayer = UIDropDownMenu_CreateInfo();
+        ignorePugPlayer.text = L.IGNORE_PUG_FRIEND;
+        ignorePugPlayer.notCheckable = true;
+        ignorePugPlayer.func = function()
+
+        end
+        UIDropDownMenu_AddButton(ignorePugPlayer);
+
+    end)
+
+    hooksecurefunc("SetItemRef", function(link)
+        local linkType, prefix, cmd, sender = strsplit("?", link)
+        if linkType == "garrmission" and prefix == "dungeonPugs" and cmd == "inviteLink" then
+            InviteToGroup(sender)
+        end
+    end)
+
     self.helpIcon:SetScript("OnClick", function()
-        for k, helptip in ipairs(self.helptips) do
+        for k, helptip in ipairs(self.lfg.helptips) do
             helptip:SetShown(not helptip:IsVisible())
         end
     end)
 
-    self.clearInstanceFilters:SetScript("OnClick", function()
-        self.dungeonPlayersListview.DataProvider:Flush()
-        self.dungeonPlayersListview.DataProvider:InsertTable(self.allPlayers or {})
+    PanelTemplates_SetNumTabs(self, 2);
+    PanelTemplates_SetTab(self, 1);
+    self.tab1:SetScript("OnClick", function()
+        PanelTemplates_SetTab(self, 1);
+        self.lfg:Show()
+        self.pugFriends:Hide()
+    end)
+    self.tab2:SetScript("OnClick", function()
+        PanelTemplates_SetTab(self, 2);
+        self.lfg:Hide()
+        self.pugFriends:Show()
+    end)
+
+
+    self.lfg.clearInstanceFilters:SetScript("OnClick", function()
+        self.lfg.dungeonPlayersListview.DataProvider:Flush()
+        self.lfg.dungeonPlayersListview.DataProvider:InsertTable(self.allPlayers or {})
         self.selectedDungeon = nil;
-        self.dungeonPlayersListview.header:SetText(L.ALL_PLAYERS_HEADER)
+        self.lfg.dungeonPlayersListview.header:SetText(L.ALL_PLAYERS_HEADER)
+        self:UpdateWhisperMessage()
+        
+        --this might be an issue
+        --LFGBrowseFrameActivityDropDown.ResetButton:Click()
+    end)
+
+    self.lfg.blizzDontBreakThis:SetAttribute("macrotext1", [[/click LFGBrowseFrameRefreshButton]])
+
+    self.lfg.roleHealer.label:SetText(CreateAtlasMarkup("groupfinder-icon-role-large-heal", 26, 26))
+    self.lfg.roleTank.label:SetText(CreateAtlasMarkup("groupfinder-icon-role-large-tank", 26, 26))
+    self.lfg.roleDps.label:SetText(CreateAtlasMarkup("groupfinder-icon-role-large-dps", 26, 26))
+
+
+    self.lfg.roleHealer:SetScript("OnClick", function()
+        self:UpdateWhisperMessage()
+    end)
+    self.lfg.roleTank:SetScript("OnClick", function()
+        self:UpdateWhisperMessage()
+    end)
+    self.lfg.roleDps:SetScript("OnClick", function()
+        self:UpdateWhisperMessage()
+    end)
+    self.lfg.includeInstanceName:SetScript("OnClick", function()
+        self:UpdateWhisperMessage()
+    end)
+    self.lfg.includeClass:SetScript("OnClick", function()
         self:UpdateWhisperMessage()
     end)
 
-    self.blizzDontBreakThis:SetAttribute("macrotext1", [[/click LFGBrowseFrameRefreshButton]])
+    self.lfg.blizzDontBreakThis:SetText(L.REFRESH_SEARCH)
+    self.lfg.clearInstanceFilters:SetText(L.CLEAR_INSTANCE_FILTER)
 
-    self.roleHealer.label:SetText(CreateAtlasMarkup("groupfinder-icon-role-large-heal", 26, 26))
-    self.roleTank.label:SetText(CreateAtlasMarkup("groupfinder-icon-role-large-tank", 26, 26))
-    self.roleDps.label:SetText(CreateAtlasMarkup("groupfinder-icon-role-large-dps", 26, 26))
+    self.lfg.whisperMessageInput.label:SetText(L.WHISPER_MESSAGE)
+    self.lfg.includeClass.label:SetText(L.INCLUDE_CLASS)
+    self.lfg.includeInstanceName.label:SetText(L.INCLUDE_INSTANCE_NAME)
 
+    self.lfg.dungeonPlayersListview.header:SetText(L.DUNGEON_PLAYERS_HEADER)
 
-    self.roleHealer:SetScript("OnClick", function()
-        self:UpdateWhisperMessage()
-    end)
-    self.roleTank:SetScript("OnClick", function()
-        self:UpdateWhisperMessage()
-    end)
-    self.roleDps:SetScript("OnClick", function()
-        self:UpdateWhisperMessage()
-    end)
-    self.includeInstanceName:SetScript("OnClick", function()
-        self:UpdateWhisperMessage()
-    end)
-    self.includeClass:SetScript("OnClick", function()
-        self:UpdateWhisperMessage()
-    end)
+    self.lfg.helpParent.text:SetText(L.HELP)
 
-    self.blizzDontBreakThis:SetText(L.REFRESH_SEARCH)
-    self.clearInstanceFilters:SetText(L.CLEAR_INSTANCE_FILTER)
-
-    self.whisperMessageInput.label:SetText(L.WHISPER_MESSAGE)
-    self.includeClass.label:SetText(L.INCLUDE_CLASS)
-    self.includeInstanceName.label:SetText(L.INCLUDE_INSTANCE_NAME)
-
-    self.dungeonPlayersListview.header:SetText(L.DUNGEON_PLAYERS_HEADER)
-
-    self.help:SetText(L.HELP)
-
-    self.dungeonsListviewHelp:SetText(L.HELPTIP_DUNGEON_LISTVIEW)
-    self.dungeonPlayersListviewHelp:SetText(L.HELPTIP_DUNGEON_PLAYERS_LISTVIEW)
-    self.configHelp:SetText(L.HELTIP_CONFIG)
+    self.lfg.dungeonsListviewHelp:SetText(L.HELPTIP_DUNGEON_LISTVIEW)
+    self.lfg.dungeonPlayersListviewHelp:SetText(L.HELPTIP_DUNGEON_PLAYERS_LISTVIEW)
+    self.lfg.configHelp:SetText(L.HELTIP_CONFIG)
 
 --ldfgbrowseframesearchungspinner
 
@@ -89,14 +165,14 @@ end
 
 function DungeonPugsMixin:UpdateWhisperMessage()
 
-    local isTank = self.roleTank:GetChecked()
-    local isDps = self.roleDps:GetChecked()
-    local isHealer = self.roleHealer:GetChecked()
-    local includeClass = self.includeClass:GetChecked()
-    local includeInstance = self.includeInstanceName:GetChecked()
+    local isTank = self.lfg.roleTank:GetChecked()
+    local isDps = self.lfg.roleDps:GetChecked()
+    local isHealer = self.lfg.roleHealer:GetChecked()
+    local includeClass = self.lfg.includeClass:GetChecked()
+    local includeInstance = self.lfg.includeInstanceName:GetChecked()
 
     if (isDps == false) and (isTank == false) and (isHealer == false) and (includeClass == false) and (includeInstance == false) then
-        self.whisperMessageInput:SetText("")
+        self.lfg.whisperMessageInput:SetText("")
         return;
     end
 
@@ -109,7 +185,7 @@ function DungeonPugsMixin:UpdateWhisperMessage()
         end
     end
 
-    local msg = L.HELLO
+    local msg = ""
 
     if includeClass then
         msg = string.format("%s %s", msg, UnitClass("player"))
@@ -126,13 +202,24 @@ function DungeonPugsMixin:UpdateWhisperMessage()
     end
 
     if includeInstance then
-        self.whisperMessageInput:SetText(string.format("%s %s %s", msg, L.LFG, dunegon))
+        self.lfg.whisperMessageInput:SetText(string.format("%s %s %s", msg, L.LFG, dunegon))
     else
-        self.whisperMessageInput:SetText(string.format("%s %s", msg, L.LFG))
+        self.lfg.whisperMessageInput:SetText(string.format("%s %s", msg, L.LFG))
     end
 
-    self.whisperMessageInput:SetCursorPosition(1)
+    self.lfg.whisperMessageInput:SetCursorPosition(1)
 end
+
+
+
+function DungeonPugsMixin:AddDungeonPugFriend(name, class)
+    StaticPopup_Show ("AddDungeonPugFriend", name, class, { 
+        name = name,
+        class = class,
+    })
+end
+
+
 
 local onUpdateElapsed = 0
 function DungeonPugsMixin:OnUpdate(elapsed)
@@ -158,9 +245,11 @@ function DungeonPugsMixin:OnEvent(event, ...)
         Mixin(addon, CallbackRegistryMixin)
         addon:GenerateCallbackEvents({
             "Database_OnInitialised",
+            "Database_OnDungeonPugFriendsChanged",
             "DungeonList_OnSelectionChanged",
             "Playerslist_OnMouseDown",
             "LFG_OnListChanged",
+            "Player_OnAddDungeonPugFriend",
         });
         CallbackRegistryMixin.OnLoad(addon);
 
@@ -168,8 +257,13 @@ function DungeonPugsMixin:OnEvent(event, ...)
         addon:RegisterCallback("DungeonList_OnSelectionChanged", self.DungeonList_OnSelectionChanged, self);
         addon:RegisterCallback("Playerslist_OnMouseDown", self.Playerslist_OnMouseDown, self);
         addon:RegisterCallback("LFG_OnListChanged", self.LFG_OnListChanged, self);
+        addon:RegisterCallback("Player_OnAddDungeonPugFriend", self.Player_OnAddDungeonPugFriend, self);
+        addon:RegisterCallback("Database_OnDungeonPugFriendsChanged", self.Database_OnDungeonPugFriendsChanged, self);
 
-        addon.db:Init();
+        addon.database:Init();
+
+        AceComm:Embed(self)
+        self:RegisterComm(addonName)
 
     end
 
@@ -198,6 +292,7 @@ function DungeonPugsMixin:OnEvent(event, ...)
             })
         end
         DungeonPugsInstanceDropdownButton:SetScript("OnClick", function()
+            if C_LFGList.GetActiveEntryInfo() then return end;
             EasyMenu(menu, DungeonPugsInstanceDropdown, DungeonPugsInstanceDropdown, 10, 10, nil, 5.0)
         end)
     end
@@ -216,6 +311,21 @@ function DungeonPugsMixin:OnEvent(event, ...)
         LFGBrowseFrame:HookScript("OnShow", function()
             self:LFG_OnListChanged()
         end)
+
+        -- local lfgBrowseFrameWidth = LFGParentFrame:GetWidth()
+        -- LFGParentFrameTab1:HookScript("OnClick", function()
+        --     LFGParentFrame:SetWidth(lfgBrowseFrameWidth)
+        --     LFGBrowseFrame:SetWidth(lfgBrowseFrameWidth)
+        -- end)
+        -- LFGParentFrameTab2:HookScript("OnClick", function()
+        --     LFGParentFrame:SetWidth(lfgBrowseFrameWidth + 400)
+        --     LFGBrowseFrame:SetWidth(lfgBrowseFrameWidth + 400)
+
+        --     LFGBrowseFrameFrameBackgroundTop:Hide()
+        --     LFGBrowseFrameFrameBackgroundMiddle:Hide()
+        --     LFGBrowseFrameBackgroundArt:Hide()
+        --     LFGBrowseFrameFrameBackgroundBottom:Hide()
+        -- end)
     
         C_Timer.After(5.0, function()
             LFGParentFrameTab2:Click()
@@ -228,6 +338,19 @@ function DungeonPugsMixin:OnEvent(event, ...)
 
     self.statusText:SetText(event)
 end
+
+
+function DungeonPugsMixin:OnCommReceived(prefix, message, distribution, sender)
+    
+    if prefix == addonName then
+        local cmd, info = strsplit("-", message)
+        if cmd == "showInviteLink" then
+            self:HandleHyperlink(info, sender)
+        end
+    end
+end
+
+
 
 function DungeonPugsMixin:Database_OnInitialised()
 
@@ -249,40 +372,26 @@ function DungeonPugsMixin:Database_OnInitialised()
     if not DungeonPugsAccount.minimapIcon then DungeonPugsAccount.minimapIcon = {} end
     self.MinimapIcon:Register('DungeonPugs', self.MinimapButton, DungeonPugsAccount.minimapIcon)
 
-    --these dont seem to always be ready on initial login
-    -- local categories = C_LFGList.GetAvailableCategories()
-    -- local getCategoriesTicker;
-    -- if #categories == 0 then
-    --     getCategoriesTicker = C_Timer.NewTicker(1.0, function()
-    --         i = i + 1;
-    --         categories = C_LFGList.GetAvailableCategories()
-    --         if #categories == 5 then
-    --             local menu = {}
-    --             for k, categoryID in ipairs(categories) do
-    --                 local category = C_LFGList.GetCategoryInfo(categoryID)
-    --                 table.insert(menu, {
-    --                     text = category,
-    --                     isTitle = false,
-    --                     notCheckable = true,
-    --                     func = function()
-    --                         UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, category)
-    --                         UIDropDownMenu_SetSelectedValue(LFGBrowseFrame.CategoryDropDown, categoryID);
-    --                         LFGBrowseFrameRefreshButton:Click()
-    --                     end
-    --                 })
-    --             end
-    --             DungeonPugsInstanceDropdownButton:SetScript("OnClick", function()
-    --                 EasyMenu(menu, DungeonPugsInstanceDropdown, DungeonPugsInstanceDropdown, 10, 10, nil, 5.0)
-    --             end)
-    --             getCategoriesTicker:Cancel()
-    --         end
-    --     end)
-    -- end
-
+    self.pugFriends.friendsListview.DataProvider:InsertTable(Database:GetDungeonPugsFriends())
 
 end
 
 
+function DungeonPugsMixin:Player_OnAddDungeonPugFriend(name, class, note)
+    
+    Database:AddDungeonPugFriend({
+        name = name,
+        class = class,
+        note = note,
+    })
+end
+
+
+function DungeonPugsMixin:Database_OnDungeonPugFriendsChanged(data)
+
+    self.pugFriends.friendsListview.DataProvider:Flush()
+    self.pugFriends.friendsListview.DataProvider:InsertTable(data)
+end
 
 --so the idea here is to grab all the data baout players and dungeons from the LFG system
 --its awkward
@@ -297,7 +406,7 @@ function DungeonPugsMixin:LFG_OnListChanged()
     C_Timer.After(1.0, function()
 
         --clear the old listview data
-        self.dungeonsListview.DataProvider:Flush()
+        self.lfg.dungeonsListview.DataProvider:Flush()
 
         --get the filtered results
         local _, filteredResults = C_LFGList.GetFilteredSearchResults();
@@ -319,14 +428,24 @@ function DungeonPugsMixin:LFG_OnListChanged()
     
                     --get the activity info
                     local activity = C_LFGList.GetActivityInfoTable(v)
+
+                    --print(activity.fullName, activity.groupFinderActivityGroupID)
     
                     --set the name and is heroic variables
                     local fullName = activity.fullName;    
-                    local isHeroic = activity.groupFinderActivityGroupID == 289 and 1 or 0;
+                    local isHeroic = 0;
+                    if activity.groupFinderActivityGroupID == 289 then --wrath hc
+                        isHeroic = 1;
+                    end
+                    if activity.groupFinderActivityGroupID == 288 then --tbc hc
+                        isHeroic = 1;
+                    end
     
                     --lets not duplicate things, see if it exists first!
                     local exists = false;
                     for k, v in ipairs(dungeons) do
+
+                        local isGroup;
     
                         --look for a matching dungeon entry
                         if (v.name == fullName) and (v.isHeroic == isHeroic) then
@@ -338,15 +457,26 @@ function DungeonPugsMixin:LFG_OnListChanged()
 
                             --upvalue this, leaders are important in groups
                             local leaderName = ""
+
+                            --is this a group?
+                            isGroup = searchResultData.numMembers > 1 and true or false;
+
+                            local groupMembers = {};
     
                             --loop the listing members (or member)
                             for i = 1, searchResultData.numMembers do
 
-                                --is this a group?
-                                local isGroup = searchResultData.numMembers > 1 and true or false;
-
                                 --finally some dirt on the players, a GUID would be awesome in here Blizzard!
                                 local name, role, class, _, level, isLeader = C_LFGList.GetSearchResultMemberInfo(searchResultData.searchResultID, i)
+
+                                if isGroup then
+                                    table.insert(groupMembers, {
+                                        name = name,
+                                        class = class,
+                                        role = role,
+                                        level = level,
+                                    })
+                                end
     
                                 --leaders get special treatment
                                 if isLeader then
@@ -386,18 +516,26 @@ function DungeonPugsMixin:LFG_OnListChanged()
     
                                 else
     
-                                    table.insert(v.players, {
-                                        name = name,
-                                        role = role,
-                                        class = class,
-                                        level = level,
-                                        zone = "-",
-                                        inGroup = true,
-                                        groupLeader = leaderName,
-                                        isLeader = false,
-                                    })
+                                    -- table.insert(v.players, {
+                                    --     name = name,
+                                    --     role = role,
+                                    --     class = class,
+                                    --     level = level,
+                                    --     zone = "-",
+                                    --     inGroup = true,
+                                    --     groupLeader = leaderName,
+                                    --     isLeader = false,
+                                    -- })
                                 end
             
+                            end
+
+                            if isGroup then
+                                for k, player in ipairs(v.players) do
+                                    if player.isLeader then
+                                        player.groupMembers = groupMembers;
+                                    end
+                                end
                             end
                             exists = true;
                         end
@@ -410,11 +548,24 @@ function DungeonPugsMixin:LFG_OnListChanged()
 
                         local leaderName = ""
 
+                        local groupMembers = {}
+
+                        local isGroup;
+
                         for i = 1, searchResultData.numMembers do
 
-                            local name, role, class, _, level, isLeader, a, b, c, d, e, f, g = C_LFGList.GetSearchResultMemberInfo(searchResultData.searchResultID, i)
+                            local name, role, class, _, level, isLeader = C_LFGList.GetSearchResultMemberInfo(searchResultData.searchResultID, i)
 
-                            local isGroup = searchResultData.numMembers > 1 and true or false;
+                            isGroup = searchResultData.numMembers > 1 and true or false;
+
+                            if isGroup then
+                                table.insert(groupMembers, {
+                                    name = name,
+                                    class = class,
+                                    role = role,
+                                    level = level,
+                                })
+                            end
 
                             if isLeader then
                                 
@@ -453,20 +604,28 @@ function DungeonPugsMixin:LFG_OnListChanged()
 
                             else
 
-                                table.insert(players, {
-                                    name = name,
-                                    role = role,
-                                    class = class,
-                                    level = level,
-                                    zone = "-",
-                                    inGroup = true,
-                                    groupLeader = leaderName,
-                                    isLeader = false,
-                                })
+                                -- table.insert(players, {
+                                --     name = name,
+                                --     role = role,
+                                --     class = class,
+                                --     level = level,
+                                --     zone = "-",
+                                --     inGroup = true,
+                                --     groupLeader = leaderName,
+                                --     isLeader = false,
+                                -- })
                             end
-        
+
                         end
     
+                        if isGroup then
+                            for k, player in ipairs(players) do
+                                if player.isLeader then
+                                    player.groupMembers = groupMembers;
+                                end
+                            end
+                        end
+
                         table.insert(dungeons, {
                             name = fullName,
                             isHeroic = isHeroic,
@@ -491,7 +650,7 @@ function DungeonPugsMixin:LFG_OnListChanged()
         
         end)
     
-        self.dungeonsListview.DataProvider:InsertTable(dungeons)
+        self.lfg.dungeonsListview.DataProvider:InsertTable(dungeons)
 
         --a thing for everyone
         self.allPlayers = {};
@@ -513,20 +672,36 @@ function DungeonPugsMixin:LFG_OnListChanged()
 
         --crowds need sorting out
         table.sort(self.allPlayers, function(a, b)
-            if a.role == b.role then
+            if a.inGroup == b.inGroup then
 
                 if a.isLeader == b.isLeader then
-                    if a.level == b.level then
-                        return a.name < b.name
+
+                    if a.groupLeader == b.groupLeader then
+
+                        if a.role == b.role then
+                        
+                            if a.level == b.level then
+                                return a.name < b.name
+                            else
+                                return a.level > b.level
+                            end
+
+                        else
+
+                            return a.role > b.role
+                        end
+
                     else
-                        return a.level > b.level
+
+                        return a.groupLeader < b.groupLeader
                     end
                 else
                     return a.isLeader and not b.isLeader
                 end
+
             else
-                if a.role ~= nil and b.role ~= nil then
-                    return a.role > b.role
+                if a.inGroup ~= nil and b.inGroup ~= nil then
+                    return a.inGroup and not b.inGroup
                 end
             end
         end)
@@ -542,9 +717,9 @@ function DungeonPugsMixin:LFG_OnListChanged()
             end
 
         else
-            self.dungeonPlayersListview.DataProvider:Flush()
-            self.dungeonPlayersListview.DataProvider:InsertTable(self.allPlayers or {})
-            self.dungeonPlayersListview.header:SetText(L.ALL_PLAYERS_HEADER)
+            self.lfg.dungeonPlayersListview.DataProvider:Flush()
+            self.lfg.dungeonPlayersListview.DataProvider:InsertTable(self.allPlayers or {})
+            self.lfg.dungeonPlayersListview.header:SetText(L.ALL_PLAYERS_HEADER)
         end
 
         --good to knwo when we last got an update
@@ -561,12 +736,12 @@ function DungeonPugsMixin:DungeonList_OnSelectionChanged(info)
     self.selectedDungeon = info;
 
     if info.isHeroic == 1 then
-        self.dungeonPlayersListview.header:SetText(L.DUNGEON_PLAYERS_HEADER_HC:format(info.name))
+        self.lfg.dungeonPlayersListview.header:SetText(L.DUNGEON_PLAYERS_HEADER_HC:format(info.name))
     else
-        self.dungeonPlayersListview.header:SetText(L.DUNGEON_PLAYERS_HEADER:format(info.name))
+        self.lfg.dungeonPlayersListview.header:SetText(L.DUNGEON_PLAYERS_HEADER:format(info.name))
     end
     
-    self.dungeonPlayersListview.DataProvider:Flush()
+    self.lfg.dungeonPlayersListview.DataProvider:Flush()
 
     table.sort(info.players, function(a, b)
         if a.role == b.role then
@@ -587,7 +762,7 @@ function DungeonPugsMixin:DungeonList_OnSelectionChanged(info)
         end
     end)
 
-    self.dungeonPlayersListview.DataProvider:InsertTable(info.players)
+    self.lfg.dungeonPlayersListview.DataProvider:InsertTable(info.players)
 
     self:UpdateWhisperMessage()
 end
@@ -597,17 +772,33 @@ function DungeonPugsMixin:Playerslist_OnMouseDown(button, player)
 
     if button == "LeftButton" then
         
-        if IsAltKeyDown() then
+        if IsAltKeyDown() and not IsShiftKeyDown() then
 
             if type(player.name) == "string" then
                 InviteToGroup(player.name)
             end
 
-        else
-            local msg = self.whisperMessageInput:GetText();
+        elseif IsShiftKeyDown() and not IsAltKeyDown() then
+           
+            local msg = self.lfg.whisperMessageInput:GetText();
             if msg ~= "" then
-                SendChatMessage(msg, "WHISPER", nil, player.name)
+                --SendChatMessage(msg, "WHISPER", nil, player.name)
             end
+
+            local link = string.format("|cFFFFFF00|Hgarrmission?%s?%s|h[invite]|h|r", addonName, msg)
+
+            --SendChatMessage(link, "WHISPER", nil, "Kylandia")
+            --C_ChatInfo.SendAddonMessageLogged(link, "WHISPER", nil, "Kylandia")
+
+            self:SendCommMessage(addonName, string.format("showInviteLink-%s", msg), "WHISPER", "Kylandia")
+
         end
     end
+end
+
+
+
+function DungeonPugsMixin:HandleHyperlink(msg, sender)
+    local link = string.format("|cFFFFFF00|Hgarrmission?dungeonPugs?inviteLink?%s|h|cffDD66FF[%s]|r |cffffffff%s|r [%s]|h|r", sender, addonName, msg, L.LINK_INVITE)
+    print(link)
 end

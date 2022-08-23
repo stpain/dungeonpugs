@@ -2,6 +2,9 @@
 
 local addonName, addon = ...;
 
+local L = addon.locales
+local Database = addon.database;
+
 DungeonPugsHelpTipMixin = {};
 function DungeonPugsHelpTipMixin:SetText(text)
     self.text:SetText(text)
@@ -158,6 +161,8 @@ end
 
 function DungeonPugsPlayerListviewItemTemplateMixin:SetDataBinding(binding, height)
 
+    local backgroundOpacity = 0.09
+
     self:SetHeight(height)
 
     if binding.class then
@@ -179,14 +184,18 @@ function DungeonPugsPlayerListviewItemTemplateMixin:SetDataBinding(binding, heig
             name = string.format("%s %s", name, CreateAtlasMarkup("newplayerchat-chaticon-newcomer", 20, 20))
         end
     end
-    self.name:SetText(name)
+    if binding.inGroup and binding.isLeader then
+        self.name:SetText(string.format("%s [%s]", name, #binding.groupMembers))
+    else
+        self.name:SetText(name)
+    end
     
     if binding.role == "TANK" then
-        self.background:SetColorTexture(0,0,1,0.1)
+        self.background:SetColorTexture(0,0,1,backgroundOpacity)
     elseif binding.role == "HEALER" then
-        self.background:SetColorTexture(0,1,0,0.1)
+        self.background:SetColorTexture(0,1,0,backgroundOpacity)
     else
-        self.background:SetColorTexture(1,0,0,0.1)
+        self.background:SetColorTexture(1,0,0,backgroundOpacity)
     end
 
 
@@ -204,27 +213,54 @@ function DungeonPugsPlayerListviewItemTemplateMixin:SetDataBinding(binding, heig
         self.roles:SetText(s)
     end
 
-    if binding.inGroup and (binding.isLeader == false) then
+    if binding.inGroup then -- and (binding.isLeader == false) then
         self.roles:SetText(CreateAtlasMarkup("socialqueuing-icon-group", 22, 22))
-
-        self:SetScript("OnEnter", function()
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:AddLine("Group leader")
-            GameTooltip:AddLine(binding.groupLeader, 1,1,1)
-            GameTooltip:Show()
-        end)
-
-        self:SetScript("OnLeave", function()
-            GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
-        end)
     end
+
+    self:SetScript("OnEnter", function()
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+
+        if binding.inGroup then -- and (binding.isLeader == false) then
+            --self.roles:SetText(CreateAtlasMarkup("socialqueuing-icon-group", 22, 22))
+
+            -- GameTooltip:AddLine("Group leader")
+            -- GameTooltip:AddLine(binding.groupLeader, 1,1,1)
+        -- end       
+        -- if binding.inGroup and (binding.isLeader == true) then
+            GameTooltip:AddLine("Members:")
+            for k, player in ipairs(binding.groupMembers) do
+                --DevTools_Dump({player})
+                local icon = player.class and CreateAtlasMarkup(string.format("GarrMission_ClassIcon-%s", player.class)) or ""
+                local role;
+                if player.role == "DAMAGER" then
+                    role = player.role and CreateAtlasMarkup("groupfinder-icon-role-large-dps", 16, 16)
+                elseif player.role == "TANK" then
+                    role = player.role and CreateAtlasMarkup("groupfinder-icon-role-large-tank", 16, 16)
+                else
+                    role = player.role and CreateAtlasMarkup("groupfinder-icon-role-large-heal", 16, 16)
+                end
+                GameTooltip:AddDoubleLine(string.format("%s |cffffffff%s|r %s", icon, player.level, addon.Colours[player.class:upper()]:WrapTextInColorCode(player.name)), role)
+            end
+        end       
+
+        local dpf = Database:GetDungeonPugFriend(binding.name, binding.class)
+        if type(dpf) == "table" then
+            GameTooltip:AddLine(L.TOOLTIP_NOTE)
+            GameTooltip:AddLine(dpf.note, 1,1,1)
+        end
+        GameTooltip:Show()
+    end)
+
+    self:SetScript("OnLeave", function()
+        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
+    end)
 
     self:SetScript("OnMouseDown", function(_, button)
         addon:TriggerEvent("Playerslist_OnMouseDown", button, binding)
     end)
 
     if self.roles:GetText() == "" or self.roles:GetText() == nil then
-        self.background:SetColorTexture(252/255, 197/255, 0, 0.1)
+        self.background:SetColorTexture(252/255, 197/255, 0, backgroundOpacity)
     end
 
 end
@@ -234,6 +270,99 @@ function DungeonPugsPlayerListviewItemTemplateMixin:ResetDataBinding()
     self.class:SetAtlas("")
     self.name:SetText("")
     self.roles:SetText("")
+    self.background:SetColorTexture(0,0,0,0)
+
+    self:SetScript("OnEnter", nil)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DungeonPugsFriendListviewItemTemplateMixin = {}
+function DungeonPugsFriendListviewItemTemplateMixin:OnLoad()
+
+end
+
+function DungeonPugsFriendListviewItemTemplateMixin:SetDataBinding(binding, height)
+
+    local backgroundOpacity = 0.09
+
+    self:SetHeight(height)
+
+    if binding.class then
+        self.class:SetAtlas(string.format("GarrMission_ClassIcon-%s", binding.class))
+        self.class:SetSize(height-2, height-2)
+    end
+
+    if binding.level then
+        self.level:SetText(binding.level)
+    end
+
+    if binding.name then
+        self.name:SetText(binding.name)
+    end
+
+    if binding.note then
+        self.note:SetText(binding.note)
+    end
+    
+    if binding.role == "TANK" then
+        self.background:SetColorTexture(0,0,1,backgroundOpacity)
+    elseif binding.role == "HEALER" then
+        self.background:SetColorTexture(0,1,0,backgroundOpacity)
+    else
+        self.background:SetColorTexture(1,0,0,backgroundOpacity)
+    end
+
+
+    if binding.roles then
+        local s = "";
+        if binding.roles.dps then
+            s = s..CreateAtlasMarkup("groupfinder-icon-role-large-dps", 22, 22)
+        end
+        if binding.roles.healer then
+            s = s..CreateAtlasMarkup("groupfinder-icon-role-large-heal", 22, 22)
+        end
+        if binding.roles.tank then
+            s = s..CreateAtlasMarkup("groupfinder-icon-role-large-tank", 22, 22)
+        end
+        --self.roles:SetText(s)
+    end
+
+    -- self:SetScript("OnEnter", function()
+    --     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+
+    --     GameTooltip:Show()
+    -- end)
+
+    -- self:SetScript("OnLeave", function()
+    --     GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
+    -- end)
+
+    self:SetScript("OnMouseDown", function(_, button)
+        if button == "RightButton" then
+            Database:RemoveDungeonPugsFriend(binding)
+        end
+    end)
+
+
+end
+
+function DungeonPugsFriendListviewItemTemplateMixin:ResetDataBinding()
+
+    self.class:SetAtlas("")
+    self.name:SetText("")
+    self.note:SetText("")
     self.background:SetColorTexture(0,0,0,0)
 
     self:SetScript("OnEnter", nil)

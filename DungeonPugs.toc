@@ -1,18 +1,23 @@
 ## Interface: 30400
 ## Author: theboringdad
-## Version: 0.2
+## Version: 0.1
 ## Title: Dungeon Pugs
 ## Notes: Dungeons? Nah it does raids, pvp, questing and even custom stuff!
 ## SavedVariables: DungeonPugsAccount
 ## SavedVariablesPerCharacter: DungeonPugsCharacter
 ## Dependencies: Blizzard_LookingForGroupUI
 
+Libs\ChatThrottleLib.lua
+Libs\AceComm-3.0\AceComm-3.0.xml
+
 Locales.lua
 
 Database.lua
 
-Listview.lua
-Listview.xml
+Templates.lua
+Templates.xml
+
+Dialogs.lua
 
 DungeonPugs.lua
 DungeonPugs.xml
