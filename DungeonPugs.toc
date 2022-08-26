@@ -1,25 +1,19 @@
 ## Interface: 30400
 ## Author: theboringdad
-## Version: 0.3
+## Version: 0.4
 ## Title: Dungeon Pugs
-## Notes: Dungeons? Nah it does raids, pvp, questing and even custom stuff!
+## Notes: Minimap tooltip style UI for viewing LFG listings
 ## SavedVariables: DungeonPugsAccount
-## SavedVariablesPerCharacter: DungeonPugsCharacter
 ## Dependencies: Blizzard_LookingForGroupUI
 
 Libs\ChatThrottleLib.lua
 Libs\AceComm-3.0\AceComm-3.0.xml
+Libs\LibLFG-1.0\LibLFG-1.0.lua
 
 Locales.lua
-
-Database.lua
 
 Templates.lua
 Templates.xml
 
-Dialogs.lua
-
 DungeonPugs.lua
 DungeonPugs.xml
-
-Bindings.xml

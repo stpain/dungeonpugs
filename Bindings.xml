@@ -1,5 +1,0 @@
-<Bindings>
-    <Binding name="Open Dungeon Pugs" header="GENERAL" category="Dungeon Pugs">
-        DungeonPugsUI:Show()
-    </Binding>
-</Bindings>
