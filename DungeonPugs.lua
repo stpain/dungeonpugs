@@ -79,11 +79,12 @@ function DungeonPugsMixin:OnLoad()
         }
 
         for k, dungeon in ipairs(dungeons) do
+            local name = (dungeon.isHeroic == 1) and string.format("%s %s", CreateAtlasMarkup("dungeonskull", 16, 16), dungeon.name) or dungeon.name
             table.insert(menu, {
-                text = (dungeon.isHeroic == 1) and string.format("%s %s", CreateAtlasMarkup("dungeonskull", 16, 16), dungeon.name) or dungeon.name,
+                text = name,
                 notCheckable = true,
                 func = function()
-                    UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, dungeon.name)
+                    UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, name)
                     self:ShowFilteredResults(dungeon)
                 end,
             })
@@ -92,7 +93,22 @@ function DungeonPugsMixin:OnLoad()
         EasyMenu(menu, DungeonPugsInstanceDropdown, DungeonPugsInstanceDropdown, 20, 10, nil, 1.5)
     end)
 
+    self.refresh:SetAttribute("macrotext1", [[/click LFGBrowseFrameRefreshButton]])
+    self.refresh:SetScript("OnEnter", function()
+        GameTooltip:SetOwner(self.refresh, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(L.REFRESH_SEARCH)
+        GameTooltip:Show()
+    end)
+    self.refresh:SetScript("OnLeave", function()
+        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
+    end)
 
+    self.helptip:SetText(L.HELP)
+    self.help:SetScript("OnClick", function()
+        for k, tip in ipairs(self.helptips) do
+            tip:SetShown(not tip:IsVisible())
+        end
+    end)
 end
 
 function DungeonPugsMixin:UpdateWhisperMessage()
@@ -179,9 +195,6 @@ function DungeonPugsMixin:OnEvent(event, ...)
                     self:SetShown(not self:IsVisible())
                     self:ClearAllPoints()
                     self:SetPoint("TOPRIGHT", ldbIcon, "TOPLEFT", 0, 0)
-    
-                elseif button == "RightButton" then
-                    LFGBrowseFrameRefreshButton:Click() --this might get broken
                 end
             end,
             OnEnter = function()
@@ -223,7 +236,7 @@ function DungeonPugsMixin:AddMinimapSparkles()
         button.glow:SetPoint("BOTTOMRIGHT", -1, 1)
         button.glow:SetAlpha(0)
 
-        button.glow:SetAtlas("ShipMission-RedGlowRing") --ArtifactsFX-Whirls ArtifactsFX-YellowRing ChallengeMode-KeystoneSlotFrameGlow GarrMission_CurrentEncounter-Glow ShipMission-RedGlowRing Darktrait-Glow 
+        button.glow:SetAtlas("ShipMission-RedGlowRing") --ArtifactsFX-YellowRing   ShipMission-RedGlowRing Darktrait-Glow 
     
         button.animation = button:CreateAnimationGroup()
         button.animation:SetLooping("REPEAT")
@@ -261,6 +274,7 @@ function DungeonPugsMixin:ShowFilteredResults(dungeon)
     else
         self.dungeonPlayersListview.DataProvider:InsertTable(dungeon.players)
     end
+    self:UpdateWhisperMessage()
 end
 
 

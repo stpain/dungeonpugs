@@ -76,7 +76,7 @@
 		</Scripts>
 	</Frame>
 
-	<Frame name="DungeonPugsHelpTipTemplate_TopArrow" inherits="GlowBoxTemplate" mixin="DungeonPugsHelpTipMixin" virtual="true" enableMouse="true" frameStrata="TOOLTIP">
+	<Frame name="DungeonPugsHelpTipTemplate_RightArrow" inherits="GlowBoxTemplate" mixin="DungeonPugsHelpTipMixin" virtual="true" enableMouse="true" frameStrata="TOOLTIP">
 		<Layers>
 			<Layer level="OVERLAY">
 				<FontString parentKey="text" inherits="GameFontHighlightLeft" justifyH="LEFT" justifyV="TOP">
@@ -112,12 +112,14 @@
 			<OnShow method="OnShow"/>
             <OnLoad>
                 self.BG:Hide()
+                self.Arrow:ClearAllPoints()
+                self.Arrow:SetPoint("RIGHT", 35, 0)
                 self.Arrow.Arrow:ClearAllPoints()
-                self.Arrow.Arrow:SetPoint("TOP", 0, -11)
-                self.Arrow.Arrow:SetRotation(3.14)
+                self.Arrow.Arrow:SetPoint("RIGHT", 0, -11)
+                self.Arrow.Arrow:SetRotation(1.57)
                 self.Arrow.Glow:ClearAllPoints()
-                self.Arrow.Glow:SetPoint("TOP", -4, -3)
-                self.Arrow.Glow:SetRotation(3.14)
+                self.Arrow.Glow:SetPoint("RIGHT", 10, -10)
+                self.Arrow.Glow:SetRotation(1.57)
             </OnLoad>
 		</Scripts>
 	</Frame>

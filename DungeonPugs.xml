@@ -178,14 +178,50 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
             <Frame name="DungeonPugsInstanceDropdown" parentKey="instanceDropdown" inherits="UIDropDownMenuTemplate">
                 <Size x="200" y="22"/>
                 <Anchors>
-                    <Anchor point="TOP" relativeKey="$parent.whisperMessageInput" relativePoint="BOTTOM" x="0" y="-10"/>
+                    <Anchor point="TOP" relativeKey="$parent.whisperMessageInput" relativePoint="BOTTOM" x="-5" y="-10"/>
                 </Anchors>
             </Frame>
+
+            <Button parentKey="help">
+                <Size x="18" y="18"/>
+                <Attributes>
+                    <Attribute name="type1" value="macro"/>
+                </Attributes>
+                <Anchors>
+                    <Anchor point="TOPRIGHT" relativeKey="$parent.instanceDropdown" relativePoint="TOPLEFT" x="12" y="-4"/>
+                </Anchors>
+                <NormalTexture atlas="glueannouncementpopup-icon-info"/>
+                <HighlightTexture atlas="worldquest-questmarker-glow">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="-8" y="8"/>
+                        <Anchor point="BOTTOMRIGHT" x="8" y="-8"/>
+                    </Anchors>
+                </HighlightTexture>
+            </Button>
+
+            <Frame parentKey="helptip" parentArray="helptips" inherits="DungeonPugsHelpTipTemplate_RightArrow" hidden="true">
+                <Size x="280" y="160"/>
+                <Anchors>
+                    <Anchor point="TOPRIGHT" relativePoint="TOPLEFT" x="-24" y="-20"/>
+                </Anchors>
+            </Frame>
+
+            <Button parentKey="refresh" inherits="SecureActionButtonTemplate" registerForClicks="LeftButtonUp">
+                <Size x="21" y="21"/>
+                <Attributes>
+                    <Attribute name="type1" value="macro"/>
+                </Attributes>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.instanceDropdown" relativePoint="TOPRIGHT" x="-12" y="-4"/>
+                </Anchors>
+                <NormalTexture atlas="transmog-icon-revert"/>
+                <HighlightTexture atlas="transmog-frame-pink"/>
+            </Button>
 
 
             <Frame parentKey="dungeonPlayersListview" inherits="DungeonPugsListviewTemplate">
                 <Anchors>
-                    <Anchor point="TOP" relativeKey="$parent.instanceDropdown" relativePoint="BOTTOM" x="-5" y="-5"/>
+                    <Anchor point="TOP" relativeKey="$parent.whisperMessageInput" relativePoint="BOTTOM" x="5" y="-40"/>
                     <Anchor point="BOTTOMLEFT" x="2" y="4"/>
                     <Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
                 </Anchors>
