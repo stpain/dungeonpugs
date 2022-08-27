@@ -113,12 +113,12 @@
             <OnLoad>
                 self.BG:Hide()
                 self.Arrow:ClearAllPoints()
-                self.Arrow:SetPoint("RIGHT", 35, 0)
+                self.Arrow:SetPoint("RIGHT", 36, 0)
                 self.Arrow.Arrow:ClearAllPoints()
-                self.Arrow.Arrow:SetPoint("RIGHT", 0, -11)
+                self.Arrow.Arrow:SetPoint("RIGHT", 0, -1)
                 self.Arrow.Arrow:SetRotation(1.57)
                 self.Arrow.Glow:ClearAllPoints()
-                self.Arrow.Glow:SetPoint("RIGHT", 10, -10)
+                self.Arrow.Glow:SetPoint("RIGHT", 10, 0)
                 self.Arrow.Glow:SetRotation(1.57)
             </OnLoad>
 		</Scripts>

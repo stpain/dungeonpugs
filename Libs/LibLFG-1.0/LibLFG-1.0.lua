@@ -11,17 +11,21 @@ if not lib then
     return
 end
 
-Mixin(lib, CallbackRegistryMixin)
-lib:GenerateCallbackEvents({
-    "LibLFG_OnListChanged",
-})
-CallbackRegistryMixin.OnLoad(lib);
+if not lib.GenerateCallbackEvents then
+    Mixin(lib, CallbackRegistryMixin)
+    lib:GenerateCallbackEvents({
+        "LibLFG_OnListChanged",
+    })
+    CallbackRegistryMixin.OnLoad(lib);
+end
 
-local function lfg_OnChanged()
+local dungeons = {};
+local allPlayers = {};
 
-    local dungeons = {};
+local function lfgList_OnChanged()
 
-    local allPlayers = {};
+    dungeons = {};
+    allPlayers = {};
 
     --get the filtered results
     local _, filteredResults = C_LFGList.GetFilteredSearchResults();
@@ -304,16 +308,21 @@ local function lfg_OnChanged()
     end)
 
     lib:TriggerEvent("LibLFG_OnListChanged", dungeons, allPlayers)
-
-    return dungeons, allPlayers;
 end
 
 
+--this function relies on being able to click the lfg refresh button
+--its very likely blizzard will remove this ability
+--if so lib users will need to handle refreshing the list themselves - a SecureActionButtonTemplate button should allow a macro to click the button
 function lib:GetSearchResults(categoryID)
+    
     UIDropDownMenu_SetSelectedValue(LFGBrowseFrame.CategoryDropDown, categoryID);
-    LFGBrowseFrameRefreshButton:Click() --this might require a magic button
-    local dungeon, allPlayers = lfg_OnChanged()
-    return dungeon, allPlayers;
+    
+    --this might require a magic button
+    LFGBrowseFrameRefreshButton:Click()
+
+    lfgList_OnChanged()
+    return dungeons, allPlayers;
 end
 
 
@@ -322,4 +331,4 @@ f:RegisterEvent("LFG_LIST_SEARCH_RESULT_UPDATED");
 f:RegisterEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED");
 f:RegisterEvent("LFG_LIST_AVAILABILITY_UPDATE");
 
-f:SetScript("OnEvent", lfg_OnChanged)
+f:SetScript("OnEvent", lfgList_OnChanged)

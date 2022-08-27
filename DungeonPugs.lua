@@ -8,7 +8,6 @@ for k, v in pairs(RAID_CLASS_COLORS) do
     addon.Colours[k] = CreateColor(v:GetRGB())
 end
 
-local AceComm = LibStub:GetLibrary("AceComm-3.0")
 local LibLFG = LibStub:GetLibrary("LibLFG-1.0")
 
 local L = addon.locales;
@@ -60,10 +59,10 @@ function DungeonPugsMixin:OnLoad()
         self:UpdateWhisperMessage()
     end)
 
-    UIDropDownMenu_SetWidth(DungeonPugsInstanceDropdown, 200)
+    UIDropDownMenu_SetWidth(DungeonPugsInstanceDropdown, 135)
     DungeonPugsInstanceDropdownButton:SetScript("OnClick", function()
         if C_LFGList.GetActiveEntryInfo() then
-            return 
+            --return 
         end;
 
         local dungeons = LibLFG:GetSearchResults(2)
@@ -73,7 +72,8 @@ function DungeonPugsMixin:OnLoad()
                 notCheckable = true,
                 func = function()
                     UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, "-")
-                    self:ShowFilteredResults(nil)
+                    self.selectedDungeon = nil;
+                    self:ShowFilteredResults()
                 end,
             }
         }
@@ -85,12 +85,121 @@ function DungeonPugsMixin:OnLoad()
                 notCheckable = true,
                 func = function()
                     UIDropDownMenu_SetText(DungeonPugsInstanceDropdown, name)
-                    self:ShowFilteredResults(dungeon)
+                    self.selectedDungeon = dungeon;
+                    self:ShowFilteredResults()
                 end,
             })
         end
 
         EasyMenu(menu, DungeonPugsInstanceDropdown, DungeonPugsInstanceDropdown, 20, 10, nil, 1.5)
+    end)
+
+
+    UIDropDownMenu_SetWidth(DungeonPugsClassDropdown, 85)
+    local classRoleCheck = {
+        TANK = {
+            DEATHKNIGHT = true,
+            PALADIN = true,
+            DRUID = true,
+            WARRIOR = true,
+        },
+        HEALER = {
+            DRUID = true,
+            PRIEST = true,
+            PALADIN = true,
+            SHAMAN = true,
+        },
+        DAMAGER = {
+            DRUID = true,
+            PRIEST = true,
+            PALADIN = true,
+            SHAMAN = true,
+            HUNTER = true,
+            MAGE = true,
+            WARRIOR = true,
+            WARLOCK = true,
+            ROGUE = true,
+            DEATHKNIGHT = true,
+        },
+    }
+    local classMenulist = {}
+    for _, role in ipairs({"TANK", "HEALER", "DAMAGER"}) do
+        classMenulist[role] = {}
+        for i = 1, GetNumClasses() do
+            local className, classFile, classID = GetClassInfo(i)
+            if className and classFile then
+                if classRoleCheck[role] and classRoleCheck[role][classFile] == true then
+                    local atlas = CreateAtlasMarkup(string.format("GarrMission_ClassIcon-%s", classFile:lower()), 18, 18)
+                    table.insert(classMenulist[role], {
+                        text = string.format("%s %s", atlas, className),
+                        notCheckable = true,
+                        func = function()
+                            UIDropDownMenu_SetText(DungeonPugsClassDropdown, className)
+                            self.selectedClass = classFile;
+                            self.selectedRole = role,
+                            self:ShowFilteredResults()
+                        end,
+                    })
+                end
+            end
+        end        
+    end
+
+    local menu = {
+        {
+            text = "All",
+            notCheckable = true,
+            func = function()
+                UIDropDownMenu_SetText(DungeonPugsClassDropdown, "All")
+                self.selectedClass = nil;
+                self.selectedRole = nil;
+                self:ShowFilteredResults()
+            end,
+        },
+        {
+            text = "Role",
+            notCheckable = true,
+            menuList = {
+                {
+                    text = string.format("%s %s", CreateAtlasMarkup("groupfinder-icon-role-large-tank", 18, 18), L.TANK),
+                    notCheckable = true,
+                    hasArrow = true,
+                    menuList = classMenulist.TANK,
+                    func = function()
+                        UIDropDownMenu_SetText(DungeonPugsClassDropdown, L.TANK)
+                        self.selectedRole = "TANK";
+                        self:ShowFilteredResults()
+                    end,
+                },
+                {
+                    text = string.format("%s %s", CreateAtlasMarkup("groupfinder-icon-role-large-heal", 18, 18), L.HEALER),
+                    notCheckable = true,
+                    hasArrow = true,
+                    menuList = classMenulist.HEALER,
+                    func = function()
+                        UIDropDownMenu_SetText(DungeonPugsClassDropdown, L.HEALER)
+                        self.selectedRole = "HEALER";
+                        self:ShowFilteredResults()
+                    end,
+                },
+                {
+                    text = string.format("%s %s", CreateAtlasMarkup("groupfinder-icon-role-large-dps", 18, 18), L.DPS),
+                    notCheckable = true,
+                    hasArrow = true,
+                    menuList = classMenulist.DAMAGER,
+                    func = function()
+                        UIDropDownMenu_SetText(DungeonPugsClassDropdown, L.DPS)
+                        self.selectedRole = "DAMAGER";
+                        self:ShowFilteredResults()
+                    end,
+                },
+            },
+            hasArrow = true,
+        },
+    }
+
+    DungeonPugsClassDropdownButton:SetScript("OnClick", function()
+        EasyMenu(menu, DungeonPugsClassDropdown, DungeonPugsClassDropdown, 20, 10, nil, 1.5)
     end)
 
     self.refresh:SetAttribute("macrotext1", [[/click LFGBrowseFrameRefreshButton]])
@@ -103,12 +212,17 @@ function DungeonPugsMixin:OnLoad()
         GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
     end)
 
-    self.helptip:SetText(L.HELP)
+    self.helptipTop:SetText(L.HELP_TOP)
+    self.helptipBottom:SetText(L.HELP_BOTTOM)
     self.help:SetScript("OnClick", function()
         for k, tip in ipairs(self.helptips) do
             tip:SetShown(not tip:IsVisible())
         end
     end)
+end
+
+function DungeonPugsMixin:OnShow()
+    LibLFG:GetSearchResults(2)
 end
 
 function DungeonPugsMixin:UpdateWhisperMessage()
@@ -163,18 +277,11 @@ end
 
 local onUpdateElapsed = 0
 function DungeonPugsMixin:OnUpdate(elapsed)
-
     onUpdateElapsed = onUpdateElapsed + elapsed;
-
     if self.lfgUpdateTime then
-
         local refreshElapsed = time() - self.lfgUpdateTime;
-
-        self.lastUpdatedInfo:SetText(string.format("Last updated %s", SecondsToTime(refreshElapsed)))
-    
-
+        self.lastUpdatedInfo:SetText(string.format(L.LAST_UPDATED, SecondsToTime(refreshElapsed)))
     end
-    
 end
 
 function DungeonPugsMixin:OnEvent(event, ...)
@@ -182,9 +289,6 @@ function DungeonPugsMixin:OnEvent(event, ...)
     if event == "ADDON_LOADED" then
         
         self:UnregisterEvent("ADDON_LOADED");
-
-        AceComm:Embed(self)
-        self:RegisterComm(addonName)
 
         local ldb = LibStub("LibDataBroker-1.1")
         self.DataObject = ldb:NewDataObject(addonName, {
@@ -207,25 +311,12 @@ function DungeonPugsMixin:OnEvent(event, ...)
         if not DungeonPugsAccount.minimapIcon then DungeonPugsAccount.minimapIcon = {} end
         LibStub("LibDBIcon-1.0"):Register(addonName, self.DataObject, DungeonPugsAccount.minimapIcon)
         
-        self:AddMinimapSparkles()
-
     end
 
 end
 
 
-function DungeonPugsMixin:OnCommReceived(prefix, message, distribution, sender)
-    if prefix == addonName then
-        local cmd, info = strsplit("-", message)
-        if cmd == "showInviteLink" then
-            if self.minimapButton then
-                self.minimapButton.animation:Play()
-            end
-        end
-    end
-end
-
-
+--going to leave this here in case it gets implemented in the future
 function DungeonPugsMixin:AddMinimapSparkles()
     
     local button = LibStub:GetLibrary("LibDBIcon-1.0"):GetMinimapButton(addonName)
@@ -257,8 +348,6 @@ function DungeonPugsMixin:AddMinimapSparkles()
         button.animScale:SetToScale(scaleTo, scaleTo)
         button.animScale:SetDuration(duration)
         button.animScale:SetChildKey("glow")
-    
-        --button.animation:Play()
 
         self.minimapButton = button;
     end
@@ -266,14 +355,47 @@ end
 
 
 
-function DungeonPugsMixin:ShowFilteredResults(dungeon)
-    self.selectedDungeon = dungeon;
+function DungeonPugsMixin:ShowFilteredResults()
     self.dungeonPlayersListview.DataProvider:Flush()
-    if dungeon == nil then
-        self.dungeonPlayersListview.DataProvider:InsertTable(self.allPlayers or {})
+
+    local players = type(self.selectedDungeon) == "table" and self.selectedDungeon.players or self.allPlayers;
+
+    local t = {}
+    if self.selectedRole then
+
+        if self.selectedClass then
+
+            for k, player in ipairs(players) do
+                if player.class and (player.class == self.selectedClass) and player.role and (player.role == self.selectedRole) then
+                    table.insert(t, player)
+                end
+            end
+        
+        else
+            for k, player in ipairs(players) do
+                if player.role and (player.role == self.selectedRole) then
+                    table.insert(t, player)
+                end
+            end
+        end
+
     else
-        self.dungeonPlayersListview.DataProvider:InsertTable(dungeon.players)
+
+        if self.selectedClass then
+
+            for k, player in ipairs(players) do
+                if player.class and (player.class == self.selectedClass) then
+                    table.insert(t, player)
+                end
+            end
+        
+        else
+            t = players;
+        end
     end
+
+
+    self.dungeonPlayersListview.DataProvider:InsertTable(t)
     self:UpdateWhisperMessage()
 end
 
@@ -285,19 +407,9 @@ function DungeonPugsMixin:LFG_OnListChanged(dungeons, allPlayers)
     self.dungeons = dungeons;
     self.allPlayers = allPlayers;
 
-    --update the dungeon specific list, if the user chose one...
-    if self.selectedDungeon then
+    self:ShowFilteredResults()
 
-        for k, dungeon in ipairs(dungeons) do
-            if dungeon.name == self.selectedDungeon.name and dungeon.isHeroic == self.selectedDungeon.isHeroic then
-                self:DungeonList_OnSelectionChanged(dungeon)
-            end
-        end
-
-    else
-        self.dungeonPlayersListview.DataProvider:Flush()
-        self.dungeonPlayersListview.DataProvider:InsertTable(allPlayers or {})
-    end
+    self.lfgUpdateTime = time()
 
 end
 
@@ -350,28 +462,15 @@ function DungeonPugsMixin:Playerslist_OnMouseDown(player)
         if msg ~= "" then
             SendChatMessage(msg, "WHISPER", nil, player.name)
         end
-    
-    elseif IsControlKeyDown() and not IsShiftKeyDown() and not IsAltKeyDown() then
-
-        if msg ~= "" then
-            self:SendCommMessage(addonName, string.format("showInviteLink-%s", msg), "WHISPER", "Kylandia")
-        end
 
     end
 end
 
 
-
+--potential feature for later on
 function DungeonPugsMixin:HandleHyperlink(msg, sender)
     local link = string.format("|cFFFFFF00|Hgarrmission?dungeonPugs?inviteLink?%s|h|cffDD66FF[%s]|r |cffffffff%s|r [%s]|h|r", sender, addonName, msg, L.LINK_INVITE)
     print(link)
-
-    if self.minimapButton then
-        self.minimapButton.animation:Play()
-        C_Timer.After(3.0, function()
-            self.minimapButton.animation:Stop()
-        end)
-    end
 end
 
 

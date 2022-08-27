@@ -184,7 +184,7 @@ function DungeonPugsPlayerListviewItemTemplateMixin:SetDataBinding(binding, heig
                     role = player.role and CreateAtlasMarkup("groupfinder-icon-role-large-heal", 16, 16)
                 end
                 local colour = player.class and player.class:upper() or "PRIEST"
-                GameTooltip:AddDoubleLine(string.format("%s |cffffffff%s|r %s", icon, player.level, addon.Colours[colour]:WrapTextInColorCode(player.name)), role)
+                GameTooltip:AddDoubleLine(string.format("%s |cffffffff%s|r %s", icon, (player.level and player.level or "-"), addon.Colours[colour]:WrapTextInColorCode(player.name)), role)
             end
         end
         

@@ -1,33 +1,17 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 
-    <Frame name="DungeonPugsUI" mixin="DungeonPugsMixin" parent="UIParent" hyperlinksEnabled="true" inherits="TooltipBorderedFrameTemplate" frameStrata="HIGH" enableMouse="true" movable="true">
-        <Size x="290" y="400"/>
+    <Frame name="DungeonPugsUI" mixin="DungeonPugsMixin" parent="UIParent" inherits="TooltipBorderedFrameTemplate" frameStrata="HIGH" enableMouse="true" movable="true" hidden="true">
+        <Size x="290" y="420"/>
         <Anchors>
             <Anchor point="CENTER" x="0" y="0"/>
         </Anchors>
         <Layers>
             <Layer level="OVERLAY">
-
-                <FontString parentKey="statusText" inherits="GameFontNormalSmall" justifyH="RIGHT">
-                    <Color r="1" g="1" b="1"/>
-                    <Size x="300" y="10"/>
-                    <Anchors>
-                        <Anchor point="TOPRIGHT" x="-48" y="-6"/>
-                    </Anchors>
-                </FontString>
-
-                <FontString parentKey="selectedDungeonLabel" inherits="GameFontNormal">
-                    <Color r="1" g="1" b="1"/>
-                    <Anchors>
-                        <Anchor point="TOP" x="0" y="-6"/>
-                    </Anchors>
-                </FontString>
-
                 <FontString parentKey="lastUpdatedInfo" inherits="GameFontNormal">
                     <Color r="1" g="1" b="1"/>
                     <Anchors>
-                        <Anchor point="TOPLEFT" x="12" y="-6"/>
+                        <Anchor point="BOTTOM" x="0" y="6"/>
                     </Anchors>
                 </FontString>
             </Layer>
@@ -178,17 +162,29 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
             <Frame name="DungeonPugsInstanceDropdown" parentKey="instanceDropdown" inherits="UIDropDownMenuTemplate">
                 <Size x="200" y="22"/>
                 <Anchors>
-                    <Anchor point="TOP" relativeKey="$parent.whisperMessageInput" relativePoint="BOTTOM" x="-5" y="-10"/>
+                    <Anchor point="TOP" relativeKey="$parent.whisperMessageInput" relativePoint="BOTTOM" x="41" y="-10"/>
                 </Anchors>
             </Frame>
 
-            <Button parentKey="help">
-                <Size x="18" y="18"/>
-                <Attributes>
-                    <Attribute name="type1" value="macro"/>
-                </Attributes>
+            <!-- <Button parentKey="filterByClass">
+                <Size x="20" y="20"/>
                 <Anchors>
-                    <Anchor point="TOPRIGHT" relativeKey="$parent.instanceDropdown" relativePoint="TOPLEFT" x="12" y="-4"/>
+                    <Anchor point="RIGHT" relativeKey="$parent.instanceDropdown" relativePoint="LEFT" x="12" y="-4"/>
+                </Anchors>
+                <NormalTexture atlas="glueannouncementpopup-icon-info"/>
+                <HighlightTexture atlas="transmog-frame-pink"/>
+            </Button> -->
+
+            <Frame name="DungeonPugsClassDropdown" parentKey="classDropdown" inherits="UIDropDownMenuTemplate">
+                <Anchors>
+                    <Anchor point="TOP" relativeKey="$parent.whisperMessageInput" relativePoint="BOTTOM" x="-90" y="-10"/>
+                </Anchors>
+            </Frame>
+
+            <Button parentKey="help" frameLevel="6" enableMouse="true">
+                <Size x="18" y="18"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="6" y="-6"/>
                 </Anchors>
                 <NormalTexture atlas="glueannouncementpopup-icon-info"/>
                 <HighlightTexture atlas="worldquest-questmarker-glow">
@@ -199,20 +195,27 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 </HighlightTexture>
             </Button>
 
-            <Frame parentKey="helptip" parentArray="helptips" inherits="DungeonPugsHelpTipTemplate_RightArrow" hidden="true">
-                <Size x="280" y="160"/>
+            <Frame parentKey="helptipTop" parentArray="helptips" inherits="DungeonPugsHelpTipTemplate_RightArrow" hidden="true">
+                <Size x="220" y="95"/>
                 <Anchors>
-                    <Anchor point="TOPRIGHT" relativePoint="TOPLEFT" x="-24" y="-20"/>
+                    <Anchor point="TOPRIGHT" relativePoint="TOPLEFT" x="-24" y="10"/>
                 </Anchors>
             </Frame>
 
-            <Button parentKey="refresh" inherits="SecureActionButtonTemplate" registerForClicks="LeftButtonUp">
+            <Frame parentKey="helptipBottom" parentArray="helptips" inherits="DungeonPugsHelpTipTemplate_RightArrow" hidden="true">
+                <Size x="220" y="150"/>
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT" x="-24" y="80"/>
+                </Anchors>
+            </Frame>
+
+            <Button parentKey="refresh" inherits="SecureActionButtonTemplate" registerForClicks="LeftButtonUp, LeftButtonDown">
                 <Size x="21" y="21"/>
                 <Attributes>
                     <Attribute name="type1" value="macro"/>
                 </Attributes>
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeKey="$parent.instanceDropdown" relativePoint="TOPRIGHT" x="-12" y="-4"/>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.instanceDropdown" relativePoint="TOPRIGHT" x="-16" y="-4"/>
                 </Anchors>
                 <NormalTexture atlas="transmog-icon-revert"/>
                 <HighlightTexture atlas="transmog-frame-pink"/>
@@ -222,13 +225,13 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
             <Frame parentKey="dungeonPlayersListview" inherits="DungeonPugsListviewTemplate">
                 <Anchors>
                     <Anchor point="TOP" relativeKey="$parent.whisperMessageInput" relativePoint="BOTTOM" x="5" y="-40"/>
-                    <Anchor point="BOTTOMLEFT" x="2" y="4"/>
-                    <Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+                    <Anchor point="BOTTOMLEFT" x="2" y="18"/>
+                    <Anchor point="BOTTOMRIGHT" x="-4" y="18"/>
                 </Anchors>
                 <KeyValues>
                     <KeyValue key="frameType" value="FRAME" type="string"/>
                     <KeyValue key="itemTemplate" value="DungeonPugsPlayerListviewItemTemplate" type="string"/>
-                    <KeyValue key="elementHeight" value="24" type="number"/>
+                    <KeyValue key="elementHeight" value="22" type="number"/>
                 </KeyValues>
                 
                 <Layers>
@@ -249,6 +252,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
             <OnLoad method="OnLoad"/>
             <OnEvent method="OnEvent"/>
             <OnUpdate method="OnUpdate"/>
+            <OnShow method="OnShow"/>
             <OnDragStart>
                 self:StartMoving()
             </OnDragStart>

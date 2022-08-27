@@ -1,13 +1,13 @@
 ## Interface: 30400
 ## Author: theboringdad
-## Version: 0.5
+## Version: 1.0
 ## Title: Dungeon Pugs
 ## Notes: Minimap tooltip style UI for viewing LFG listings
 ## SavedVariables: DungeonPugsAccount
 ## Dependencies: Blizzard_LookingForGroupUI
 
-Libs\ChatThrottleLib.lua
-Libs\AceComm-3.0\AceComm-3.0.xml
+Libs\LibStub\LibStub.lua
+Libs\LibDbIcon-1.0\LibDbIcon-1.0.lua
 Libs\LibLFG-1.0\LibLFG-1.0.lua
 
 Locales.lua
