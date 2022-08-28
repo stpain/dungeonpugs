@@ -307,8 +307,15 @@ function DungeonPugsMixin:OnEvent(event, ...)
                 end
             end,
         })
+
+        if not DungeonPugsAccount then
+            DungeonPugsAccount = {}
+        end
     
-        if not DungeonPugsAccount.minimapIcon then DungeonPugsAccount.minimapIcon = {} end
+        if not DungeonPugsAccount.minimapIcon then 
+            DungeonPugsAccount.minimapIcon = {} 
+        end
+        
         LibStub("LibDBIcon-1.0"):Register(addonName, self.DataObject, DungeonPugsAccount.minimapIcon)
         
     end

@@ -1,6 +1,6 @@
 ## Interface: 30400
 ## Author: theboringdad
-## Version: 1.0
+## Version: 1.1
 ## Title: Dungeon Pugs
 ## Notes: Minimap tooltip style UI for viewing LFG listings
 ## SavedVariables: DungeonPugsAccount
