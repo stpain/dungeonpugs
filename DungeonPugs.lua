@@ -12,6 +12,33 @@ local LibLFG = LibStub:GetLibrary("LibLFG-1.0")
 
 local L = addon.locales;
 
+local classRoleCheck = {
+    TANK = {
+        DEATHKNIGHT = true,
+        PALADIN = true,
+        DRUID = true,
+        WARRIOR = true,
+    },
+    HEALER = {
+        DRUID = true,
+        PRIEST = true,
+        PALADIN = true,
+        SHAMAN = true,
+    },
+    DAMAGER = {
+        DRUID = true,
+        PRIEST = true,
+        PALADIN = true,
+        SHAMAN = true,
+        HUNTER = true,
+        MAGE = true,
+        WARRIOR = true,
+        WARLOCK = true,
+        ROGUE = true,
+        DEATHKNIGHT = true,
+    },
+}
+
 DungeonPugsMixin = {};
 DungeonPugsMixin.allPlayers = {};
 DungeonPugsMixin.selectedDungeon = nil;
@@ -23,6 +50,7 @@ function DungeonPugsMixin:OnLoad()
     self:RegisterForDrag("LeftButton");
 
     self:RegisterEvent("ADDON_LOADED")
+    self:RegisterEvent("PLAYER_ENTERING_WORLD")
 
     Mixin(addon, CallbackRegistryMixin)
     addon:GenerateCallbackEvents({
@@ -96,32 +124,6 @@ function DungeonPugsMixin:OnLoad()
 
 
     UIDropDownMenu_SetWidth(DungeonPugsClassDropdown, 85)
-    local classRoleCheck = {
-        TANK = {
-            DEATHKNIGHT = true,
-            PALADIN = true,
-            DRUID = true,
-            WARRIOR = true,
-        },
-        HEALER = {
-            DRUID = true,
-            PRIEST = true,
-            PALADIN = true,
-            SHAMAN = true,
-        },
-        DAMAGER = {
-            DRUID = true,
-            PRIEST = true,
-            PALADIN = true,
-            SHAMAN = true,
-            HUNTER = true,
-            MAGE = true,
-            WARRIOR = true,
-            WARLOCK = true,
-            ROGUE = true,
-            DEATHKNIGHT = true,
-        },
-    }
     local classMenulist = {}
     for _, role in ipairs({"TANK", "HEALER", "DAMAGER"}) do
         classMenulist[role] = {}
@@ -315,9 +317,37 @@ function DungeonPugsMixin:OnEvent(event, ...)
         if not DungeonPugsAccount.minimapIcon then 
             DungeonPugsAccount.minimapIcon = {} 
         end
-        
+
         LibStub("LibDBIcon-1.0"):Register(addonName, self.DataObject, DungeonPugsAccount.minimapIcon)
         
+    end
+
+    if event == "PLAYER_ENTERING_WORLD" then
+        
+        local _, class = UnitClass("player")
+
+        local roles = {
+            TANK = false,
+            HEALER = false,
+            DAMAGER = false,
+        }
+
+        for role, classes in pairs(classRoleCheck) do
+            if classes[class] == true then
+                roles[role] = true;
+            end
+        end
+
+        if roles.TANK == false then
+            self.roleSelectTank.checkbox:Disable()
+        end
+        if roles.HEALER == false then
+            self.roleSelectHealer.checkbox:Disable()
+        end
+        if roles.DAMAGER == false then
+            self.roleSelectDps.checkbox:Disable()
+        end
+
     end
 
 end
